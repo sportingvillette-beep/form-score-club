@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Club — Saisie score & photo</title>
+  <meta name="color-scheme" content="light dark" />
+  <style>
+    :root{
+      /* ==== Personnalisez ces couleurs pour votre club ==== */
+      --brand: #0ea5e9;        /* primaire */
+      --brand-2: #0369a1;      /* secondaire */
+      --bg: #f6f8fb;
+      --text: #0f172a;
+      --muted: #64748b;
+      --ok: #0a7a3b;
+      --err: #b00020;
+      --card: #ffffff;
+      --border: #e5e7eb;
+    }
+    @media (prefers-color-scheme: dark){
+      :root{ --bg:#0b1220; --text:#e5e7eb; --card:#0f172a; --border:#1f2937; }
+    }
+    html,body{height:100%}
+    body{
+      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+      background: radial-gradient(1200px 600px at 80% -10%, rgba(14,165,233,.15), transparent 50%),
+                  radial-gradient(800px 400px at -10% 110%, rgba(3,105,161,.12), transparent 40%), var(--bg);
+      color:var(--text);
+    }
+    .wrap{max-width:640px;margin:28px auto;padding:0 16px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:0 10px 30px rgba(2,6,23,.08);padding:22px}
+    header{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+    header img{width:44px;height:44px;border-radius:10px;object-fit:cover;border:1px solid var(--border)}
+    header .club{font-weight:700;letter-spacing:.2px}
+    header .hint{font-size:12px;color:var(--muted)}
+
+    form{display:grid;gap:12px}
+    label{display:grid;gap:6px;font-size:14px}
+    input, select, button{font-size:16px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#fff}
+    input[type="file"]{padding:10px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .muted{color:var(--muted);font-size:12px}
+    .actions{display:flex;gap:10px;align-items:center}
+    button{cursor:pointer;background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;border:none;font-weight:600}
+    button[disabled]{opacity:.6;cursor:progress}
+
+    .dropzone{border:2px dashed var(--border);border-radius:14px;padding:14px;text-align:center;background:rgba(3,105,161,.03)}
+    .dropzone.drag{border-color:var(--brand);background:rgba(14,165,233,.08)}
+    #preview{max-width:100%;max-height:220px;border-radius:12px;display:none;margin-top:8px;border:1px solid var(--border)}
+
+    .msg{min-height:20px}
+    .ok{color:var(--ok)}
+    .err{color:var(--err)}
+    footer{margin-top:18px;text-align:center}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <header>
+        <img id="clubLogo" alt="Logo du club" src="" onerror="this.style.display='none'" />
+        <div>
+          <div class="club" id="clubName">Votre Club Handball</div>
+          <div class="hint">Saisie du score & photo — week-end</div>
+        </div>
+      </header>
+
+      <form id="f" novalidate>
+        <label>ID match
+          <input name="match_id" id="match_id" required placeholder="ex: MCH-2025-08-12-001" autocomplete="off">
+        </label>
+        <div class="row">
+          <label>Score domicile
+            <input type="number" name="score_dom" id="score_dom" inputmode="numeric" min="0" max="200" required>
+          </label>
+          <label>Score extérieur
+            <input type="number" name="score_ext" id="score_ext" inputmode="numeric" min="0" max="200" required>
+          </label>
+        </div>
+        <label>Résultat
+          <select name="statut" id="statut" required>
+            <option value="" disabled selected>— Choisir —</option>
+            <option>Terminé</option>
+            <option>Gagné</option>
+            <option>Perdu</option>
+            <option>À jouer</option>
+          </select>
+        </label>
+
+        <div class="dropzone" id="dz">
+          <label>Photo du match (facultatif)
+            <input type="file" name="photo" id="photo" accept="image/*" capture="environment">
+          </label>
+          <div class="muted">Vous pouvez glisser-déposer une image ici, ou utiliser l'appareil photo.</div>
+          <img id="preview" alt="Aperçu photo" />
+        </div>
+
+        <!-- Anti-spam très simple (vérifier côté Make) -->
+        <input type="hidden" name="form_secret" id="form_secret" value="CHANGE-MOI">
+
+        <div class="actions">
+          <button type="submit" id="btn">Envoyer</button>
+          <div class="msg muted" id="msg" role="status" aria-live="polite"></div>
+        </div>
+      </form>
+
+      <footer class="muted">Astuce : générez un QR code avec l'URL <code>?match_id=...</code> pour préremplir automatiquement.</footer>
+    </div>
+  </div>
+
+  <script>
+    // ======== PARAMÈTRES À PERSONNALISER ========
+    const CONFIG = {
+      clubName: 'Sporting Villette',
+      logoUrl: 'logo.png', // Chemin relatif ou URL absolue (laisser vide pour masquer)
+      webhookUrl: 'https://hook.eu2.make.com/wncjxnekyz9pt4wb1dmk7h46298ojrk7',
+      maxSizeMB: 10,
+      renameUploads: true, // renommer en <match_id>-<timestamp>.<ext>
+      theme: {
+        brand: '#0ea5e9',
+        brand2: '#0369a1'
+      }
+    };
+    // ===========================================
+
+    // Appliquer thème & identité
+    (function initBrand(){
+      if (CONFIG.theme?.brand) document.documentElement.style.setProperty('--brand', CONFIG.theme.brand);
+      if (CONFIG.theme?.brand2) document.documentElement.style.setProperty('--brand-2', CONFIG.theme.brand2);
+      if (CONFIG.clubName) document.getElementById('clubName').textContent = CONFIG.clubName;
+      if (CONFIG.logoUrl){
+        const img = document.getElementById('clubLogo');
+        img.src = CONFIG.logoUrl;
+      }
+    })();
+
+    // Préremplissage via paramètres d'URL (?match_id=...)
+    (function prefill(){
+      const p = new URLSearchParams(location.search);
+      const id = p.get('match_id');
+      if (id) document.getElementById('match_id').value = id;
+    })();
+
+    // Drag & drop pour la photo
+    (function dropZone(){
+      const dz = document.getElementById('dz');
+      const file = document.getElementById('photo');
+      const prev = document.getElementById('preview');
+      ;['dragenter','dragover'].forEach(evt=>dz.addEventListener(evt, e=>{e.preventDefault();e.stopPropagation();dz.classList.add('drag')}));
+      ;['dragleave','drop'].forEach(evt=>dz.addEventListener(evt, e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('drag')}));
+      dz.addEventListener('drop', (e)=>{ if(e.dataTransfer.files?.length){ file.files = e.dataTransfer.files; file.dispatchEvent(new Event('change')); } });
+      file.addEventListener('change', ()=>{
+        const f = file.files[0];
+        if(!f){ prev.style.display='none'; prev.src=''; return; }
+        prev.src = URL.createObjectURL(f); prev.style.display='block';
+      });
+    })();
+
+    function extFrom(type, fallback){
+      if(!type) return fallback || 'jpg';
+      if (type === 'image/jpeg') return 'jpg';
+      if (type === 'image/png')  return 'png';
+      if (type === 'image/webp') return 'webp';
+      if (type === 'image/heic' || type === 'image/heif') return 'heic';
+      return fallback || 'jpg';
+    }
+    function slugify(s){ return String(s||'').trim().replace(/\s+/g,'-').replace(/[^\w\-]+/g,'').toUpperCase(); }
+
+    const form = document.getElementById('f');
+    const msg  = document.getElementById('msg');
+    const btn  = document.getElementById('btn');
+
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      msg.textContent = '';
+
+      // Validations basiques
+      const id = document.getElementById('match_id').value.trim();
+      const sd = document.getElementById('score_dom').value;
+      const se = document.getElementById('score_ext').value;
+      const st = document.getElementById('statut').value;
+      if(!id || sd==='' || se==='' || !st){ msg.textContent = 'Merci de compléter tous les champs requis.'; msg.className = 'msg err'; return; }
+
+      // Poids du fichier
+      const inputFile = document.getElementById('photo');
+      const f = inputFile.files[0];
+      if (f && f.size > CONFIG.maxSizeMB * 1024 * 1024){ msg.textContent = `Fichier trop lourd (max ${CONFIG.maxSizeMB} Mo).`; msg.className = 'msg err'; return; }
+
+      // Renommer côté client
+      if (f && CONFIG.renameUploads){
+        const ext = extFrom(f.type, f.name.split('.').pop());
+        const renamed = new File([f], `${slugify(id)}-${Date.now()}.${ext}`, { type: f.type || 'image/jpeg' });
+        const dt = new DataTransfer(); dt.items.add(renamed); document.getElementById('photo').files = dt.files;
+      }
+
+      const fd = new FormData(form);
+
+      try{
+        btn.disabled = true; btn.textContent = 'Envoi…'; msg.textContent = 'Transmission sécurisée…'; msg.className = 'msg muted';
+        const res = await fetch(CONFIG.webhookUrl, { method:'POST', body: fd });
+        if(!res.ok) throw new Error('Webhook non joignable');
+        form.reset();
+        document.getElementById('preview').style.display='none';
+        msg.textContent = 'Merci, c\'est envoyé !'; msg.className = 'msg ok';
+      }catch(err){
+        console.error(err);
+        msg.textContent = 'Erreur d\'envoi. Vérifiez la connexion et réessayez.'; msg.className = 'msg err';
+      }finally{
+        btn.disabled = false; btn.textContent = 'Envoyer';
+      }
+    });
+  </script>
+</body>
+</html>
