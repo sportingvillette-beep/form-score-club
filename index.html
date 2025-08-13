@@ -7,70 +7,40 @@
   <meta name="color-scheme" content="light dark" />
   <style>
     :root{
-      /* ==== Palette club (accessibilité clair/sombre) ==== */
-      --brand: #b9314f;        /* primaire */
-      --brand-2: #d9a05b;      /* secondaire/accent */
-      --bg: #f7f5f5;           /* fond clair */
-      --text: #2c2c2c;         /* texte en clair */
-      --muted: #64748b;
-      --ok: #2da160;           /* vert succès (clair) */
-      --err: #b00020;
-      --card: #ffffff;
-      --border: #e5e7eb;
-      --input-bg: #ffffff;     /* champs en clair */
+      --brand:#b9314f; --brand-2:#d9a05b; --bg:#f7f5f5; --text:#2c2c2c; --muted:#64748b;
+      --ok:#2da160; --err:#b00020; --card:#ffffff; --border:#e5e7eb; --input-bg:#ffffff;
     }
     @media (prefers-color-scheme: dark){
-      :root{ 
-        --bg:#2c2c2c;          /* fond sombre */
-        --text:#f7f5f5;        /* texte en sombre */
-        --card:#232323;
-        --border:#3a3a3a;
-        --input-bg:#171717;    /* champs en sombre */
-        --ok:#74d59f;          /* vert succès (sombre) */
-      }
+      :root{ --bg:#2c2c2c; --text:#f7f5f5; --card:#232323; --border:#3a3a3a; --input-bg:#171717; --ok:#74d59f; }
     }
     html,body{height:100%}
-    body{
-      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
-      background: var(--bg);
-      color:var(--text);
-    }
-    .wrap{max-width:680px;margin:28px auto;padding:0 16px}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:0 10px 30px rgba(2,6,23,.08);padding:22px}
-    header{display:flex;align-items:center;gap:14px;margin-bottom:12px}
-    header img{width:44px;height:44px;border-radius:10px;object-fit:cover;border:1px solid var(--border)}
-    header .club{font-weight:700;letter-spacing:.2px}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:460px;margin:16px auto;padding:0 12px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:0 10px 30px rgba(2,6,23,.08);padding:18px}
+    header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    header img{width:40px;height:40px;border-radius:10px;object-fit:cover;border:1px solid var(--border)}
+    header .club{font-weight:700}
     header .hint{font-size:12px;color:var(--muted)}
 
-    h3{margin:8px 0 10px}
-
-    form{display:grid;gap:12px}
-    label{display:grid;gap:6px;font-size:14px}
-    input, select, button{font-size:16px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--input-bg);color:var(--text)}
+    form{display:grid;gap:10px}
+    label{display:grid;gap:6px;font-size:15px}
+    input,select,button{font-size:18px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--input-bg);color:var(--text)}
     input::placeholder{color:var(--muted)}
     input[type="file"]{padding:10px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .row{display:grid;grid-template-columns:1fr;gap:10px}
     .muted{color:var(--muted);font-size:12px}
-    .actions{display:flex;gap:10px;align-items:center}
-    button{cursor:pointer;background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;border:none;font-weight:600}
+    .actions{display:grid;gap:8px}
+    button{cursor:pointer;background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;border:none;font-weight:700;border-radius:12px}
     button[disabled]{opacity:.6;cursor:progress}
 
     .dropzone{border:2px dashed var(--border);border-radius:14px;padding:14px;text-align:center;background:rgba(185,49,79,.06)}
     .dropzone.drag{border-color:var(--brand);background:rgba(185,49,79,.12)}
     #preview{max-width:100%;max-height:220px;border-radius:12px;display:none;margin-top:8px;border:1px solid var(--border)}
 
-    .matches .list{display:grid;gap:10px}
-    .match-card{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:var(--card);cursor:pointer}
-    .match-card:hover{outline:2px solid rgba(185,49,79,.25)}
-    .mc-left{display:grid;gap:4px;text-align:left}
-    .mc-title{font-weight:700}
-    .mc-sub{font-size:12px;color:var(--muted)}
-    .mini{padding:8px 10px;border-radius:10px}
-    .selected{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 6px;padding:10px 12px;border:1px dashed var(--border);border-radius:12px;background:rgba(185,49,79,.06)}
-    .sel-teams{font-weight:700}
-    @media (max-width:520px){ .mc-title{font-size:14px} .mc-sub{font-size:11px} .row{grid-template-columns:1fr} }
-
-    footer{margin-top:18px;text-align:center}
+    .msg{min-height:20px}
+    .ok{color:var(--ok)}
+    .err{color:var(--err)}
+    footer{margin-top:12px;text-align:center}
   </style>
 </head>
 <body>
@@ -80,45 +50,29 @@
         <img id="clubLogo" alt="Logo du club" src="logo.png" onerror="this.style.display='none'" />
         <div>
           <div class="club" id="clubName">Sporting Villette</div>
-          <div class="hint">Saisie du score & photo — week-end</div>
+          <div class="hint">Saisie du score & photo — mobile</div>
         </div>
       </header>
 
-      <!-- Sélecteur de rencontre -->
-      <section id="picker" class="matches">
-        <h3>Choisir une rencontre</h3>
-        <div id="matchesMsg" class="muted">Chargement des matchs…</div>
-        <div id="matchesList" class="list" aria-live="polite"></div>
-      </section>
-
-      <!-- Détail de la rencontre sélectionnée -->
-      <div id="selected" class="selected" hidden>
-        <div class="sel-top">
-          <div class="sel-teams" id="selTeams"></div>
-          <div class="muted" id="selMeta"></div>
-        </div>
-        <button type="button" id="changeBtn" class="mini">Changer de rencontre</button>
-      </div>
-
       <form id="f" novalidate>
-        <label id="idLine">ID match
+        <label>ID match
           <input name="match_id" id="match_id" required placeholder="ex: MCH-2025-08-12-001" autocomplete="off">
         </label>
         <div class="row">
-          <label>Score domicile
+          <label><span id="label_dom">Score domicile</span>
             <input type="number" name="score_dom" id="score_dom" inputmode="numeric" min="0" max="200" required>
           </label>
-          <label>Score extérieur
+          <label><span id="label_ext">Score extérieur</span>
             <input type="number" name="score_ext" id="score_ext" inputmode="numeric" min="0" max="200" required>
           </label>
         </div>
+
         <label>Résultat
-          <select name="statut" id="statut" required>
-            <option value="" disabled selected>— Choisir —</option>
-            <option>Terminé</option>
-            <option>Gagné</option>
-            <option>Perdu</option>
-            <option>À jouer</option>
+          <select name="statut" id="statut" required style="pointer-events:none;opacity:.9">
+            <option value="" disabled selected>— Calculé automatiquement —</option>
+            <option>Victoire</option>
+            <option>Défaite</option>
+            <option>Match Nul</option>
           </select>
         </label>
 
@@ -130,7 +84,6 @@
           <img id="preview" alt="Aperçu photo" />
         </div>
 
-        <!-- Anti-spam très simple (vérifier côté Make) -->
         <input type="hidden" name="form_secret" id="form_secret" value="CHANGE-MOI">
 
         <div class="actions">
@@ -139,7 +92,7 @@
         </div>
       </form>
 
-      <footer class="muted">Astuce : générez un QR code avec l'URL <code>?match_id=...</code> pour préremplir automatiquement.</footer>
+      <footer class="muted">Astuce : ajoutez <code>?match_id=...</code> (et facultatif <code>&eq1=...&eq2=...</code>) pour préremplir.</footer>
     </div>
   </div>
 
@@ -151,161 +104,73 @@
       webhookUrl: 'https://hook.eu2.make.com/12s2f2licqusjj1xiw3p3tulrfnd5dgw',
       maxSizeMB: 10,
       renameUploads: true,
-      // Connexion Google Sheets ("Com matchs réseaux")
-      // Publiez l'onglet en CSV (Fichier > Partager > Publier sur le Web > sélectionner l'onglet > Publier),
-      // puis copiez l'URL et remplacez `output=html` par `output=csv`.
-      // Exemple de forme finale : https://docs.google.com/spreadsheets/d/XXXXXXXX/pub?gid=YYYYY&single=true&output=csv
+      // (Optionnel mais recommandé) : publier la feuille "Com matchs réseaux" en CSV et coller l'URL ici.
+      // Ex: https://docs.google.com/spreadsheets/d/XXXX/pub?gid=YYYY&single=true&output=csv
       gsheetCsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQvskuueB25qKj0hbDWjFPomFdhfWRduUsNLp6Kv-za4t4oXcbbLsLrNsjwIt0ZH7C9B75pYBGDJfQu/pub?gid=0&single=true&output=csv',
-      fields: {
-        match_id: 'Code Gesthand',
-        date: 'Date',
-        categorie: 'Catégorie',
-        championnat: 'Championnat',
-        equipe1: 'Eq1',      // ou 'equipe_domicile'
-        equipe2: 'Eq2'       // ou 'equipe_exterieur'
-      },
-      dateWindow: { pastDays: 5, futureDays: 2 }
+      fields: { match_id:'Code Gesthand', date:'Date', categorie:'Catégorie', championnat:'Championnat', equipe1:'Eq1', equipe2:'Eq2' },
+      clubAliases: ['Sporting Villette','Villette Genas','Est Lyonnais','Lyon Est Handball']
     };
     // ================================
 
-    // Appliquer identité visuelle
-    (function initBrand(){
-      if (CONFIG.clubName) document.getElementById('clubName').textContent = CONFIG.clubName;
-      if (CONFIG.logoUrl){ const img = document.getElementById('clubLogo'); img.src = CONFIG.logoUrl; }
-    })();
+    // Identité visuelle
+    (function initBrand(){ if (CONFIG.clubName) document.getElementById('clubName').textContent = CONFIG.clubName; if (CONFIG.logoUrl){ const img=document.getElementById('clubLogo'); img.src=CONFIG.logoUrl; } })();
 
     // Drag & drop & preview
-    (function dropZone(){
-      const dz = document.getElementById('dz');
-      const file = document.getElementById('photo');
-      const prev = document.getElementById('preview');
-      ['dragenter','dragover'].forEach(evt=>dz.addEventListener(evt, e=>{e.preventDefault();e.stopPropagation();dz.classList.add('drag')}));
-      ['dragleave','drop'].forEach(evt=>dz.addEventListener(evt, e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('drag')}));
-      dz.addEventListener('drop', (e)=>{ if(e.dataTransfer.files?.length){ file.files = e.dataTransfer.files; file.dispatchEvent(new Event('change')); } });
-      file.addEventListener('change', ()=>{ const f = file.files[0]; if(!f){ prev.style.display='none'; prev.src=''; return; } prev.src = URL.createObjectURL(f); prev.style.display='block'; });
-    })();
+    (function dropZone(){ const dz=document.getElementById('dz'); const file=document.getElementById('photo'); const prev=document.getElementById('preview'); ['dragenter','dragover'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.add('drag')})); ['dragleave','drop'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('drag')})); dz.addEventListener('drop',e=>{ if(e.dataTransfer.files?.length){ file.files=e.dataTransfer.files; file.dispatchEvent(new Event('change')); } }); file.addEventListener('change',()=>{ const f=file.files[0]; if(!f){ prev.style.display='none'; prev.src=''; return; } prev.src=URL.createObjectURL(f); prev.style.display='block'; }); })();
 
-    // Utilitaires
-    function extFrom(type, fallback){ if(!type) return fallback || 'jpg'; if (type==='image/jpeg') return 'jpg'; if(type==='image/png') return 'png'; if(type==='image/webp') return 'webp'; if(type==='image/heic'||type==='image/heif') return 'heic'; return fallback || 'jpg'; }
+    function extFrom(type,fallback){ if(!type) return fallback||'jpg'; if(type==='image/jpeg')return'jpg'; if(type==='image/png')return'png'; if(type==='image/webp')return'webp'; if(type==='image/heic'||type==='image/heif')return'heic'; return fallback||'jpg'; }
     function slugify(s){ return String(s||'').trim().replace(/\s+/g,'-').replace(/[^\w\-]+/g,'').toUpperCase(); }
+    function norm(s){ return (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
 
-    const form = document.getElementById('f');
-    const msg  = document.getElementById('msg');
-    const btn  = document.getElementById('btn');
+    // ====== Étiquettes dynamiques Eq1/Eq2 (depuis CSV ou URL) ======
+    const labelDom=document.getElementById('label_dom');
+    const labelExt=document.getElementById('label_ext');
+    const inputId=document.getElementById('match_id');
+    const sdEl=document.getElementById('score_dom');
+    const seEl=document.getElementById('score_ext');
+    const statutEl=document.getElementById('statut');
 
-    // === Sélecteur de matchs ===
-    const matchesMsg = document.getElementById('matchesMsg');
-    const matchesList = document.getElementById('matchesList');
-    const idLine = document.getElementById('idLine');
-    const selectedBox = document.getElementById('selected');
-    const selTeams = document.getElementById('selTeams');
-    const selMeta = document.getElementById('selMeta');
-    const changeBtn = document.getElementById('changeBtn');
-    const STATE = { selected: null };
+    const CLUBS=(CONFIG.clubAliases||[]).map(norm);
 
-    function parseDate(val){
-      if(!val) return null;
-      if (val instanceof Date) return val;
-      if (typeof val === 'string'){
-        const g = val.match(/Date\((\d{4}),(\d{1,2}),(\d{1,2})/);
-        if (g){ return new Date(Number(g[1]), Number(g[2]), Number(g[3])); }
-        if (/^\d{4}-\d{2}-\d{2}/.test(val)) return new Date(val);
-        const fr = val.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-        if (fr){ const d=fr[1].padStart(2,'0'), m=fr[2].padStart(2,'0'), y=fr[3]; return new Date(`${y}-${m}-${d}`); }
-      }
-      const d = new Date(val);
-      return isNaN(d) ? null : d;
-    }
-    function fmtDate(d){ return d ? d.toLocaleDateString('fr-FR', { weekday:'short', day:'2-digit', month:'short' }) : ''; }
-    function inWindow(d){ const base = new Date(); base.setHours(0,0,0,0); const start = new Date(base); start.setDate(start.getDate() - (CONFIG.dateWindow.pastDays||5)); const end = new Date(base); end.setDate(end.getDate() + (CONFIG.dateWindow.futureDays||2)); return d>=start && d<=end; }
+    function setTeamLabels(eq1,eq2){ if(eq1) labelDom.textContent=`Score ${eq1}`; if(eq2) labelExt.textContent=`Score ${eq2}`; }
+
     function csvToRows(csv){ const rows=[]; let cur=[],i=0,field='',inq=false; while(i<csv.length){ const c=csv[i++]; if(c==='"'){ if(inq && csv[i]==='"'){ field+='"'; i++; } else { inq=!inq; } } else if(c===',' && !inq){ cur.push(field); field=''; } else if((c==='\n'||c==='\r') && !inq){ if(field!==''||cur.length){ cur.push(field); rows.push(cur); cur=[]; field=''; } } else { field+=c; } } if(field!==''||cur.length){ cur.push(field); rows.push(cur); } return rows.filter(r=>r.length && r.join('').trim()!==''); }
 
-    async function loadMatches(){
-      const url = CONFIG.gsheetCsvUrl;
-      if (!url || !/^https:\/\//.test(url)){ matchesMsg.textContent = "Configurez CONFIG.gsheetCsvUrl (publiez l'onglet en CSV)."; return; }
-      try{
-        matchesMsg.textContent = 'Chargement…';
-        const res = await fetch(url, { cache: 'no-store' });
-        if(!res.ok) throw new Error('CSV introuvable');
-        const csv = await res.text();
-        const rows = csvToRows(csv);
-        const headers = rows.shift().map(h=>h.trim());
-        const idx = Object.fromEntries(headers.map((h,i)=>[h.toLowerCase(), i]));
-        const F = Object.fromEntries(Object.entries(CONFIG.fields).map(([k,v])=>[k, (v||'').toLowerCase()]));
-        const items = rows.map(r => ({
-          match_id: r[idx[F.match_id]],
-          date: r[idx[F.date]],
-          categorie: r[idx[F.categorie]],
-          championnat: r[idx[F.championnat]],
-          equipe1: r[idx[F.equipe1]],
-          equipe2: r[idx[F.equipe2]]
-        })).filter(x=>x && x.match_id);
-        const enriched = items.map(x=>({ ...x, _date: parseDate(x.date) })).filter(x=>x._date && inWindow(x._date));
-        enriched.sort((a,b)=>a._date - b._date);
-        renderMatches(enriched);
-      }catch(err){ console.error(err); matchesMsg.textContent = "Impossible de charger la liste des matchs."; }
-    }
+    let _cache=null; async function fetchAndSetTeamsById(id){ if(!CONFIG.gsheetCsvUrl) return; try{ if(!_cache){ const res=await fetch(CONFIG.gsheetCsvUrl,{cache:'no-store'}); if(!res.ok) throw new Error('CSV'); const csv=await res.text(); const rows=csvToRows(csv); const headers=rows.shift().map(h=>h.trim().toLowerCase()); const idx=Object.fromEntries(headers.map((h,i)=>[h,i])); _cache={rows,idx}; } const F=CONFIG.fields; const mi=_cache.idx[(F.match_id||'').toLowerCase()]; const e1=_cache.idx[(F.equipe1||'').toLowerCase()]; const e2=_cache.idx[(F.equipe2||'').toLowerCase()]; if(mi==null) return; const row=_cache.rows.find(r=>String(r[mi]).trim()===id.trim()); if(row){ setTeamLabels(row[e1]||'Équipe 1', row[e2]||'Équipe 2'); computeResult(); } }catch(e){ console.warn('CSV load fail',e); } }
 
-    function renderMatches(list){
-      matchesList.innerHTML = '';
-      if (!list.length){ matchesMsg.textContent = 'Aucun match dans la fenêtre sélectionnée.'; return; }
-      matchesMsg.textContent = '';
-      const frag = document.createDocumentFragment();
-      list.forEach((m)=>{
-        const card = document.createElement('button');
-        card.type = 'button';
-        card.className = 'match-card';
-        card.innerHTML = `
-          <div class="mc-left">
-            <div class="mc-title">${(m.equipe1||'').trim()} <span class="muted">vs</span> ${(m.equipe2||'').trim()}</div>
-            <div class="mc-sub">${fmtDate(m._date)} · ${m.categorie||''} · ${m.championnat||''}</div>
-          </div>
-          <div class="mc-right muted">${m.match_id}</div>`;
-        card.addEventListener('click', ()=> selectMatch(m));
-        frag.appendChild(card);
-      });
-      matchesList.appendChild(frag);
-    }
+    function computeResult(){ const s1=parseInt(sdEl.value,10), s2=parseInt(seEl.value,10); if(Number.isNaN(s1)||Number.isNaN(s2)){ statutEl.value=''; return; } if(s1===s2){ statutEl.value='Match Nul'; return; } const eq1=(labelDom.textContent||'').replace(/^Score\s+/,''); const eq2=(labelExt.textContent||'').replace(/^Score\s+/,''); const isClub1=CLUBS.some(a=>norm(eq1).includes(a)); const isClub2=CLUBS.some(a=>norm(eq2).includes(a)); if(s1>s2){ if(isClub1) statutEl.value='Victoire'; else if(isClub2) statutEl.value='Défaite'; else statutEl.value='Terminé'; } else { if(isClub2) statutEl.value='Victoire'; else if(isClub1) statutEl.value='Défaite'; else statutEl.value='Terminé'; } }
 
-    function selectMatch(m){
-      STATE.selected = m;
-      selTeams.textContent = `${(m.equipe1||'').trim()} vs ${(m.equipe2||'').trim()}`;
-      selMeta.textContent = `${fmtDate(parseDate(m.date))} · ${(m.categorie||'')} · ${(m.championnat||'')}`;
-      selectedBox.hidden = false;
-      idLine.style.display = 'none';
-      document.getElementById('match_id').value = m.match_id || '';
-      document.getElementById('f').scrollIntoView({ behavior:'smooth', block:'start' });
-    }
+    // Préremplissage via URL (?match_id=...&eq1=...&eq2=...)
+    (function prefill(){ const p=new URLSearchParams(location.search); const id=p.get('match_id'); if(id){ inputId.value=id; if(CONFIG.gsheetCsvUrl) fetchAndSetTeamsById(id); } const e1=p.get('eq1'), e2=p.get('eq2'); if(e1||e2) setTeamLabels(e1,e2); })();
 
-    changeBtn.addEventListener('click', ()=>{
-      STATE.selected = null; selectedBox.hidden = true; idLine.style.display = '';
-      document.getElementById('match_id').value='';
-    });
+    // Debounce sur la saisie d'ID
+    let t=null; inputId.addEventListener('input',()=>{ clearTimeout(t); const id=inputId.value.trim(); if(!id) return; t=setTimeout(()=>fetchAndSetTeamsById(id),400); });
+    inputId.addEventListener('blur',()=>{ const id=inputId.value.trim(); if(id) fetchAndSetTeamsById(id); });
 
-    // Préremplissage via paramètres d'URL (?match_id=...)
-    (function prefill(){ const p = new URLSearchParams(location.search); const id = p.get('match_id'); if (id) document.getElementById('match_id').value = id; })();
+    sdEl.addEventListener('input', computeResult);
+    seEl.addEventListener('input', computeResult);
 
-    // Charger la liste dès l'ouverture
-    loadMatches();
+    // ====== Soumission ======
+    const form=document.getElementById('f');
+    const msg=document.getElementById('msg');
+    const btn=document.getElementById('btn');
 
-    // Soumission formulaire
     form.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      msg.textContent = '';
-      const id = document.getElementById('match_id').value.trim();
-      const sd = document.getElementById('score_dom').value;
-      const se = document.getElementById('score_ext').value;
-      const st = document.getElementById('statut').value;
-      if(!id || sd==='' || se==='' || !st){ msg.textContent = 'Merci de compléter tous les champs requis.'; msg.className = 'msg err'; return; }
-      const inputFile = document.getElementById('photo');
-      const f = inputFile.files[0];
-      if (f && f.size > CONFIG.maxSizeMB * 1024 * 1024){ msg.textContent = `Fichier trop lourd (max ${CONFIG.maxSizeMB} Mo).`; msg.className = 'msg err'; return; }
-      if (f && CONFIG.renameUploads){ const ext = extFrom(f.type, f.name.split('.').pop()); const renamed = new File([f], `${slugify(id)}-${Date.now()}.${ext}`, { type: f.type || 'image/jpeg' }); const dt = new DataTransfer(); dt.items.add(renamed); document.getElementById('photo').files = dt.files; }
-      const fd = new FormData(form);
-      if (STATE.selected){ fd.append('equipe1', STATE.selected.equipe1||''); fd.append('equipe2', STATE.selected.equipe2||''); fd.append('categorie', STATE.selected.categorie||''); fd.append('championnat', STATE.selected.championnat||''); fd.append('date_match', STATE.selected.date||''); }
-      try{ btn.disabled = true; btn.textContent = 'Envoi…'; msg.textContent = 'Transmission sécurisée…'; msg.className = 'msg muted'; const res = await fetch(CONFIG.webhookUrl, { method:'POST', body: fd }); if(!res.ok) throw new Error('Webhook non joignable'); form.reset(); document.getElementById('preview').style.display='none'; selectedBox.hidden = true; idLine.style.display = ''; msg.textContent = 'Merci, c\'est envoyé !'; msg.className = 'msg ok'; }
-      catch(err){ console.error(err); msg.textContent = 'Erreur d\'envoi. Vérifiez la connexion et réessayez.'; msg.className = 'msg err'; }
-      finally{ btn.disabled = false; btn.textContent = 'Envoyer'; }
+      e.preventDefault(); msg.textContent='';
+      const id=inputId.value.trim(); const sd=sdEl.value; const se=seEl.value; if(!id||sd===''||se===''){ msg.textContent='Merci de compléter tous les champs requis.'; msg.className='msg err'; return; }
+      const inputFile=document.getElementById('photo'); const f=inputFile.files[0]; if(f && f.size > CONFIG.maxSizeMB*1024*1024){ msg.textContent=`Fichier trop lourd (max ${CONFIG.maxSizeMB} Mo).`; msg.className='msg err'; return; }
+      // Assurer que le résultat est calculé
+      computeResult();
+      // Renommer côté client
+      if(f && CONFIG.renameUploads){ const ext=extFrom(f.type, f.name.split('.').pop()); const renamed=new File([f], `${slugify(id)}-${Date.now()}.${ext}`, {type:f.type||'image/jpeg'}); const dt=new DataTransfer(); dt.items.add(renamed); document.getElementById('photo').files=dt.files; }
+      const fd=new FormData(form);
+      // Facultatif: on joint aussi les labels d'équipes (côté Make/Canva c'est utile)
+      fd.append('equipe1_label', (labelDom.textContent||'').replace(/^Score\s+/,''));
+      fd.append('equipe2_label', (labelExt.textContent||'').replace(/^Score\s+/,''));
+
+      try{ btn.disabled=true; btn.textContent='Envoi…'; msg.textContent='Transmission sécurisée…'; msg.className='msg muted'; const res=await fetch(CONFIG.webhookUrl,{method:'POST', body:fd}); if(!res.ok) throw new Error('Webhook non joignable'); form.reset(); document.getElementById('preview').style.display='none'; msg.textContent='Merci, c\'est envoyé !'; msg.className='msg ok'; }
+      catch(err){ console.error(err); msg.textContent='Erreur d\'envoi. Vérifiez la connexion et réessayez.'; msg.className='msg err'; }
+      finally{ btn.disabled=false; btn.textContent='Envoyer'; }
     });
   </script>
 </body>
