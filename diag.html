@@ -1,0 +1,25 @@
+<!doctype html><meta charset="utf-8">
+<title>Diag Pages</title>
+<h1>Diagnostic GitHub Pages</h1>
+<pre id="out">...</pre>
+<script>
+(async () => {
+  const out = document.getElementById('out');
+  const urls = [
+    'https://sportingvillette-beep.github.io/form-score-club/assets/styles.css',
+    'https://sportingvillette-beep.github.io/form-score-club/assets/forms.js',
+    'https://sportingvillette-beep.github.io/form-score-club/assets/shared.js'
+  ];
+  const lines = [];
+  lines.push('location: ' + location.href);
+  for (const u of urls) {
+    try {
+      const r = await fetch(u, {cache:'no-store'});
+      lines.push(`${u}  →  ${r.status} ${r.statusText}  |  ${r.headers.get('content-type')}`);
+    } catch (e) {
+      lines.push(`${u}  →  ERROR: ${e.message}`);
+    }
+  }
+  out.textContent = lines.join('\n');
+})();
+</script>
