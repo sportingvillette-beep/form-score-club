@@ -98,7 +98,17 @@
     const F=CONFIG.fields; const L=Object.fromEntries(Object.entries(F).map(([k,v])=>[k,(v||'').toLowerCase()]));
     function csvToRows(csv){const rows=[];let cur=[],i=0,f='',q=false;while(i<csv.length){const c=csv[i++];if(c==='"'){if(q&&csv[i]==='"'){f+='"';i++;}else q=!q;}else if(c===','&&!q){cur.push(f);f='';}else if((c==='\n'||c==='\r')&&!q){if(f!==''||cur.length){cur.push(f);rows.push(cur);cur=[];f='';}}else f+=c;}if(f!==''||cur.length){cur.push(f);rows.push(cur);}return rows.filter(r=>r.length&&r.join('').trim()!=='');}
     function saveSelection(m){ sessionStorage.setItem('selectedMatch', JSON.stringify(m)); }
-    function getSelection(){ try{ return JSON.parse(sessionStorage.getItem('selectedMatch')||'null'); }catch{return null;} }
+    function getSelection(){
+  try {
+    const sel = JSON.parse(sessionStorage.getItem('selectedMatch') || 'null');
+    if (sel && sel._date && !(sel._date instanceof Date)) {
+      sel._date = new Date(sel._date); // re-hydrate la date
+    }
+    return sel;
+  } catch {
+    return null;
+  }
+}
 
     async function loadMatches(){
       const msg=document.getElementById('matchesMsg');
