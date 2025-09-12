@@ -37,7 +37,7 @@
     .right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;justify-self:end}
     @media (max-width:420px){.match-card{grid-template-columns:64px 1fr auto}.right{grid-column:1 / -1;align-items:flex-start}}
 
-    /* Pastilles (LIVE/Terminé/Minute/Attente) — héritées de l’ancienne version */
+    /* Pastilles */
     .chip{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;background:var(--chip);border:1px solid var(--border);font-weight:900;font-size:12px}
     .chip-live{background:#fff5db;border-color:#ffe8a1;color:#8a6d3b}
     .chip-time{background:#e6f2ff;border-color:#cfe5ff;color:#0b3c91}
@@ -77,12 +77,12 @@
         <button type="button" id="changeBtn" class="mini">Changer</button>
       </div>
 
-      <!-- 2) Boutons activés seulement si un match est choisi -->
+      <!-- 2) Boutons -->
       <div id="needSelect" class="banner" hidden>Veuillez sélectionner un match ci-dessus pour activer les actions.</div>
       <div class="toolbar">
         <div class="row">
           <button class="mini" id="goLive"  disabled>1) Ajouter score en direct</button>
-          <button class="mini" id="goFinal" disabled>2) Ajouter photo fin de match</button>
+          <button class="mini" id="goFinal" disabled title="Réservé aux matchs terminés">2) Ajouter photo fin de match</button>
           <button class="mini" id="goPhotos" disabled>3) Ajouter photos</button>
         </div>
         <div class="muted">Astuce : la sélection est gardée pendant la session.</div>
@@ -93,7 +93,7 @@
   </div>
 
   <script>
-    // --- Config (inchangé) ---
+    // --- Config ---
     const CONFIG = {
       gsheetCsvUrl:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQvskuueB25qKj0hbDWjFPomFdhfWRduUsNLp6Kv-za4t4oXcbbLsLrNsjwIt0ZH7C9B75pYBGDJfQu/pub?gid=0&single=true&output=csv',
       fields:{ match_id:'Code Gesthand', date:'Date', heure:'Heure', categorie:'Catégorie', genre:'Genre', championnat:'Championnat',
@@ -104,7 +104,7 @@
     const F = CONFIG.fields;
     const L = Object.fromEntries(Object.entries(F).map(([k,v]) => [k,(v||'').toLowerCase()]));
 
-    // --- Utils robustes (dates tolérantes) ---
+    // --- Utils robustes ---
     const U = {
       parseDateFR: v => {
         if (!v) return null;
@@ -121,7 +121,7 @@
       fmtTime: d => { const t = d instanceof Date ? d : new Date(d); return isNaN(t)?'':t.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}); }
     };
 
-    // --- Pastilles (logique héritée de l’ancienne version) ---
+    // --- Pastilles ---
     function parseMinute(winlose){
       if(!winlose) return null;
       const m=String(winlose).trim().match(/^(\d{1,3})\s*(e|’|'|eme|ème)?$/i);
@@ -165,7 +165,6 @@
       }
       return chips.join('');
     }
-    // (↑ Même logique que dans ta version historique; je l’injecte sur l’index actuel.) :contentReference[oaicite:2]{index=2}
 
     // --- CSV parsing ---
     function csvToRows(csv){
@@ -210,6 +209,13 @@
 
         renderList(filtered);
         msg.textContent='';
+
+        // 🔄 resynchronise la sélection mémorisée (pour récupérer un WinLose mis à jour)
+        const remembered = getSelection();
+        if (remembered) {
+          const updated = filtered.find(x => x.match_id === remembered.match_id);
+          if (updated) onPick(updated);
+        }
       }catch{ msg.textContent="Impossible de charger la liste des matchs."; }
     }
 
@@ -231,7 +237,7 @@
           const s2=(m.eq2score!==''&&m.eq2score!=null)?Number(m.eq2score):null;
 
           const btn=document.createElement('button'); btn.type='button'; btn.className='match-card';
-          const chips = rightChipsForMatch(m); // ← pastilles calculées ici
+          const chips = rightChipsForMatch(m);
           btn.innerHTML=`
             <div class="time-col">
               <div class="time-box">${U.fmtTime(m._date)}</div>
@@ -243,7 +249,7 @@
               <div class="meta-line">${(m.categorie||m.genre||m.championnat)?`<span class="meta-cat">${[m.categorie,m.genre,m.championnat].filter(Boolean).join(' ')}</span>`:''}</div>
               <div class="meta-line">${(m.ville||m.gymnase)?`<span class="meta-place">${[m.ville,m.gymnase].filter(Boolean).join(' · ')}</span>`:''}</div>
             </div>
-            <div class="right">${chips}</div>`;  <!-- pastilles dans la colonne droite -->
+            <div class="right">${chips}</div>`;
           btn.addEventListener('click',()=> onPick(m));
           list.appendChild(btn);
         });
@@ -254,21 +260,48 @@
     // --- Sélection + boutons ---
     function onPick(m){
       saveSelection(m);
+
       document.getElementById('selTeams').textContent=`${m.equipe1} vs ${m.equipe2}`;
       document.getElementById('selMeta').textContent=[U.fmtDate(m._date),U.fmtTime(m._date),m.categorie,m.championnat,m.ville].filter(Boolean).join(' · ');
       document.getElementById('selected').hidden=false;
 
-      document.getElementById('needSelect').hidden = true;
-      ['goLive','goFinal','goPhotos'].forEach(id=>{ document.getElementById(id).disabled=false; });
+      // cacher le warning
+      const warn = document.getElementById('needSelect');
+      warn.textContent = 'Veuillez sélectionner un match ci-dessus pour activer les actions.';
+      warn.hidden = true;
+
+      // états des boutons
+      const btnLive   = document.getElementById('goLive');
+      const btnFinal  = document.getElementById('goFinal');
+      const btnPhotos = document.getElementById('goPhotos');
+
+      btnLive.disabled   = false;
+      btnPhotos.disabled = false;
+
+      const finished = isFinished(m.winlose);
+      btnFinal.disabled = !finished;
+      btnFinal.title = finished ? '' : 'Réservé aux matchs terminés';
     }
 
     function navIfSelected(path){
       const sel=getSelection();
+      const warn=document.getElementById('needSelect');
+
       if(!sel){
-        document.getElementById('needSelect').hidden=false;
+        warn.textContent = 'Veuillez sélectionner un match ci-dessus pour activer les actions.';
+        warn.hidden=false;
         window.scrollTo({top:0,behavior:'smooth'});
         return;
       }
+
+      // verrou “photo fin de match” si non terminé
+      if (path === 'photo-finale.html' && !isFinished(sel.winlose)) {
+        warn.textContent = '“Photo fin de match” est réservé aux matchs terminés.';
+        warn.hidden=false;
+        window.scrollTo({top:0,behavior:'smooth'});
+        return;
+      }
+
       location.href='https://sportingvillette-beep.github.io/form-score-club/'+path;
     }
 
@@ -286,6 +319,7 @@
         document.getElementById('selected').hidden=true;
         document.getElementById('needSelect').hidden=false;
         ['goLive','goFinal','goPhotos'].forEach(id=>document.getElementById(id).disabled=true);
+        document.getElementById('goFinal').title = 'Réservé aux matchs terminés';
       });
 
       document.getElementById('goLive').addEventListener('click', ()=>navIfSelected('score.html'));
