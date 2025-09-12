@@ -1,15 +1,33 @@
 <!doctype html>
-<html lang="fr"><head>
-<meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Photo fin de match — Sporting Villette</title>
-<meta name="color-scheme" content="light dark" />
-<link rel="stylesheet" href="https://sportingvillette-beep.github.io/form-score-club/assets/styles.css?v=2">
-</head><body>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Photo fin de match — Sporting Villette</title>
+  <meta name="color-scheme" content="light dark" />
+  <style>
+    :root{--brand:#e4362b;--accent:#13b5a6;--bg:#f1f1f1;--text:#0f1522;--border:#cfd6df}
+    @media (prefers-color-scheme: dark){:root{--bg:#0d1117;--text:#f3f5f8;--border:#2a3748}}
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:760px;margin:18px auto;padding:0 14px}
+    .card{background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 6px 20px rgba(16,21,34,.08);padding:18px}
+    header{display:flex;align-items:center;gap:12px;margin:6px 0 12px}
+    header img{width:44px;height:44px;border-radius:10px;border:1px solid var(--border);object-fit:cover}
+    .club{font-weight:800;font-size:20px}.hint{font-size:12px;opacity:.7}
+    .mini{display:inline-block;text-align:center;padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff;text-decoration:none;font-weight:800;border:none;cursor:pointer}
+    .selected{display:flex;gap:10px;margin:10px 0 14px;padding:12px 14px;border:1px dashed var(--border);border-radius:14px;background:#fff}
+    .sel-teams{font-weight:900}.muted{opacity:.7;font-size:12px}
+    .dropzone{border:2px dashed var(--border);border-radius:14px;padding:14px;text-align:center;background:#fff;margin-top:6px}
+    #preview2{max-width:100%;max-height:220px;border-radius:12px;display:none;margin-top:8px;border:1px solid var(--border)}
+    .actions{display:grid;gap:8px;margin-top:10px}
+    .msg{min-height:20px}
+  </style>
+</head>
+<body>
 <div class="wrap"><div class="card">
   <header>
     <img alt="Logo du club" src="/form-score-club/assets/logo.png" onerror="this.style.display='none'">
     <div><div class="club">Photo fin de match</div><div class="hint">Réservé aux matchs terminés</div></div>
-    <a class="mini" style="margin-left:auto" href="https://sportingvillette-beep.github.io/form-score-club/index.html">Accueil</a>
+    <a class="mini" style="margin-left:auto" href="https://sportingvillette-beep.github.io/form-score-club/">Accueil</a>
   </header>
 
   <div class="selected" id="selBox" hidden>
@@ -18,16 +36,18 @@
       <div class="muted" id="selMeta"></div>
     </div>
   </div>
-
   <p id="infoFinale" class="muted"></p>
 
   <form id="fPhoto">
-    <h3>Ajouter une photo</h3>
     <div class="dropzone" id="dz2">
       <div class="dz-title">Image</div>
-      <input type="file" name="photo_finale" id="photo2" accept="image/*"><img id="preview2" alt="Aperçu photo" />
+      <input type="file" name="photo_finale" id="photo2" accept="image/*">
+      <img id="preview2" alt="Aperçu photo" />
     </div>
-    <div class="actions"><button type="submit" id="btn2">Envoyer photo</button><div class="msg muted" id="msg2"></div></div>
+    <div class="actions">
+      <button type="submit" id="btn2" class="mini">Envoyer photo</button>
+      <div class="msg muted" id="msg2"></div>
+    </div>
   </form>
 
   <footer class="muted">Après envoi, retour automatique à l’accueil.</footer>
@@ -35,14 +55,13 @@
 
 <script>
 const CONFIG={ webhookPhotoUrl:'https://hook.eu2.make.com/40xiygzru2pfcgwooofj7ewouwqqddsi', maxSizeMB:10 };
-const U={fmtDate:d=>d?d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long'}):'',fmtTime:d=>d?d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):''};
+const U={d:d=>new Date(d), fmtDate:d=>U.d(d).toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long'}), fmtTime:d=>U.d(d).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})};
 function getSelection(){ try{ return JSON.parse(sessionStorage.getItem('selectedMatch')||'null'); }catch{return null;} }
 function isFinished(w){return /(victoire|defaite|défaite|match\s*nul|termine|terminé)/i.test(String(w||''));}
-function requireSelection(){ const sel=getSelection(); if(!sel){ location.href='https://sportingvillette-beep.github.io/form-score-club/index.html?selectfirst=1'; return null;} return sel;}
+function requireSelection(){ const sel=getSelection(); if(!sel){ location.href='https://sportingvillette-beep.github.io/form-score-club/?selectfirst=1'; return null;} return sel;}
 
 (function init(){
   const sel=requireSelection(); if(!sel) return;
-  sel._date=new Date(sel._date);
   selTeams.textContent=`${sel.equipe1} vs ${sel.equipe2}`;
   selMeta.textContent=[U.fmtDate(sel._date),U.fmtTime(sel._date),sel.categorie,sel.championnat,sel.ville].filter(Boolean).join(' · ');
   selBox.hidden=false;
@@ -62,15 +81,16 @@ fPhoto.addEventListener('submit', async (e)=>{
   if (f && f.size>CONFIG.maxSizeMB*1024*1024){ msg2.textContent=`Fichier trop lourd (max ${CONFIG.maxSizeMB} Mo).`; msg2.className='msg err'; return; }
   const fd=new FormData();
   fd.append('match_id', sel?.match_id||''); fd.append('equipe1_label', sel?.equipe1||''); fd.append('equipe2_label', sel?.equipe2||'');
-  fd.append('meta', [U.fmtDate(new Date(sel?._date)), U.fmtTime(new Date(sel?._date)), sel?.categorie, sel?.ville].filter(Boolean).join(' · '));
+  fd.append('meta', [U.fmtDate(sel?._date), U.fmtTime(sel?._date), sel?.categorie, sel?.ville].filter(Boolean).join(' · '));
   fd.append('photo_finale', f);
   try{
     btn2.disabled=true; btn2.textContent='Envoi…'; msg2.textContent='Transmission…'; msg2.className='msg muted';
     const res=await fetch(CONFIG.webhookPhotoUrl,{method:'POST', body:fd}); if(!res.ok) throw 0;
     msg2.textContent='Photo envoyée pour archivage !'; msg2.className='msg ok';
-    setTimeout(()=>location.href='https://sportingvillette-beep.github.io/form-score-club/index.html#ok',600);
+    setTimeout(()=>location.href='https://sportingvillette-beep.github.io/form-score-club/#ok',600);
   }catch{ msg2.textContent='Erreur d’envoi.'; msg2.className='msg err'; }
   finally{ btn2.disabled=false; btn2.textContent='Envoyer photo'; }
 });
 </script>
-</body></html>
+</body>
+</html>
