@@ -20,8 +20,6 @@
     .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.row.one{grid-template-columns:1fr}
     label{display:grid;gap:6px}
     input,select,button{font-size:18px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#fff}
-    .dropzone{border:2px dashed var(--border);border-radius:14px;padding:14px;text-align:center;background:#fff;margin-top:6px}
-    #preview{max-width:100%;max-height:220px;border-radius:12px;display:none;margin-top:8px;border:1px solid var(--border)}
     .actions{display:grid;gap:8px;margin-top:10px}
     .msg{min-height:20px}
   </style>
@@ -42,8 +40,8 @@
       </div>
     </div>
 
-    <!-- FORMULAIRE -->
-    <form id="f" novalidate>
+    <!-- FORMULAIRE (photo retirée) -->
+    <form id="f" novalidate method="post" action="#">
       <input type="hidden" name="match_id" id="match_id">
       <label>État du match
         <select name="etat_match" id="etat_match" required>
@@ -71,11 +69,6 @@
           <option>En cours</option><option>Victoire</option><option>Défaite</option><option>Match Nul</option><option>Terminé</option>
         </select>
       </label>
-      <div class="dropzone" id="dz">
-        <div class="dz-title">Photo (facultatif)</div>
-        <input type="file" name="photo" id="photo" accept="image/*">
-        <img id="preview" alt="Aperçu photo" />
-      </div>
       <div class="actions">
         <button type="submit" id="btn" class="mini">Envoyer score</button>
         <div class="msg muted" id="msg"></div>
@@ -126,20 +119,19 @@ score_dom.addEventListener('input',computeResult);
 score_ext.addEventListener('input',computeResult);
 temps_jeu.addEventListener('input',()=>{ if((temps_jeu.value||'').trim()!==''){ etat_match.value='en_cours'; toggleTempsByEtat(); }});
 
-// dropzone
-['dragenter','dragover'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.add('drag')}));
-['dragleave','drop'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('drag')}));
-dz.addEventListener('drop',e=>{ if(e.dataTransfer.files?.length){ photo.files=e.dataTransfer.files; photo.dispatchEvent(new Event('change')); } });
-photo.addEventListener('change',()=>{ const f=photo.files[0]; if(!f){ preview.style.display='none'; preview.src=''; return; } preview.src=URL.createObjectURL(f); preview.style.display='block'; });
-
-// submit
+// submit (sans photo)
 f.addEventListener('submit', async (e)=>{
   e.preventDefault();
-  if(match_id.value.trim()==='' || score_dom.value==='' || score_ext.value===''){ msg.textContent='Complétez les champs requis.'; msg.className='msg err'; return; }
-  const fimg=photo.files[0]; if(fimg && fimg.size > CONFIG.maxSizeMB*1024*1024){ msg.textContent=`Fichier trop lourd (max ${CONFIG.maxSizeMB} Mo).`; msg.className='msg err'; return; }
+  if(match_id.value.trim()==='' || score_dom.value==='' || score_ext.value===''){
+    msg.textContent='Complétez les champs requis.'; msg.className='msg err'; return;
+  }
   const fd=new FormData(e.target);
-  if(etat_match.value==='en_cours'){ const t=(temps_jeu.value||'').trim(); if(!t){ msg.textContent='Indiquez le temps de jeu.'; msg.className='msg err'; return; } fd.set('WinLose', `${parseInt(t,10)}e`); }
-  else { computeResult(); fd.set('WinLose', statut.value||'Terminé'); }
+  if(etat_match.value==='en_cours'){
+    const t=(temps_jeu.value||'').trim(); if(!t){ msg.textContent='Indiquez le temps de jeu.'; msg.className='msg err'; return; }
+    fd.set('WinLose', `${parseInt(t,10)}e`);
+  } else {
+    computeResult(); fd.set('WinLose', statut.value||'Terminé');
+  }
   const sel=getSelection(); if(sel){ fd.append('equipe1_label', sel.equipe1||''); fd.append('equipe2_label', sel.equipe2||''); }
   try{
     btn.disabled=true; btn.textContent='Envoi…'; msg.textContent='Transmission…'; msg.className='msg muted';
