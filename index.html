@@ -12,10 +12,12 @@
     .wrap{max-width:760px;margin:18px auto;padding:0 14px}.card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:18px}
     header{display:flex;align-items:center;gap:12px;margin:6px 0 12px} header img{width:44px;height:44px;border-radius:10px;object-fit:cover;border:1px solid var(--border)}
     .club{font-weight:800;letter-spacing:.2px;font-size:20px}.hint{font-size:12px;color:var(--muted)}
-    .toolbar{display:grid;gap:8px;margin:10px 0}.toolbar .row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-    .mini{display:inline-block;text-align:center;padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff;text-decoration:none;font-weight:800}
+    .toolbar{display:grid;gap:8px;margin:14px 0 0}.toolbar .row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+    .mini{display:inline-block;text-align:center;padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff;text-decoration:none;font-weight:800;border:none;cursor:pointer}
+    .mini[disabled]{opacity:.6;cursor:not-allowed;filter:grayscale(.2)}
     .selected{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 8px;padding:12px 14px;border:1px dashed var(--border);border-radius:14px;background:#fff}
     .sel-teams{font-weight:900}.muted{color:var(--muted);font-size:12px}
+    .banner{margin:-6px 0 10px;padding:10px 12px;border-radius:12px;background:#fff5f5;border:1px solid #ffd1d1;color:#7a1a11;font-weight:700}
     .day-section{margin:14px 0 8px;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--card)}
     .day-head{position:sticky;top:0;z-index:5;background:var(--card);padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:8px}
     .day-title{font-weight:900;text-transform:capitalize}.day-sub{margin-left:auto;color:var(--muted);font-size:12px}
@@ -28,7 +30,6 @@
     .team-name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.team-score{min-width:42px;text-align:right;font-weight:900;color:var(--deep)}
     .meta-line{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}.meta-cat{color:var(--accent);font-weight:900;font-size:16px}.meta-place{color:var(--muted);font-size:13px}
     .right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;justify-self:end}
-    .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;letter-spacing:.2px;padding:6px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--border)}
     @media (max-width:420px){.match-card{grid-template-columns:64px 1fr auto}.right{grid-column:1 / -1;align-items:flex-start}}
   </style>
 </head>
@@ -36,13 +37,21 @@
   <div class="wrap">
     <div class="card">
       <header>
-        <img alt="Logo du club" src="assets/logo.png" onerror="this.style.display='none'">
+        <img alt="Logo du club" src="/form-score-club/assets/logo.png" onerror="this.style.display='none'">
         <div>
           <div class="club">Sporting Villette</div>
-          <div class="hint">Liste des matchs — choisissez puis action</div>
+          <div class="hint">Sélectionnez d’abord une rencontre, puis l’action.</div>
         </div>
       </header>
 
+      <!-- 1) LISTE EN PREMIER -->
+      <section class="matches">
+        <h3>Rencontres (J-2 → J+5)</h3>
+        <div id="matchesMsg" class="muted">Chargement des matchs…</div>
+        <div id="daysContainer"></div>
+      </section>
+
+      <!-- panneau de sélection (apparaît après clic) -->
       <div id="selected" class="selected" hidden>
         <div>
           <div class="sel-teams" id="selTeams"></div>
@@ -51,27 +60,23 @@
         <button type="button" id="changeBtn" class="mini">Changer</button>
       </div>
 
+      <!-- 2) BOUTONS APRÈS LA LISTE — activés seulement si un match est choisi -->
+      <div id="needSelect" class="banner" hidden>Veuillez sélectionner un match ci-dessus pour activer les actions.</div>
       <div class="toolbar">
         <div class="row">
-          <a class="mini" id="goLive"  href="/form-score-club/score.html">1) Ajouter score en direct</a>
-          <a class="mini" id="goFinal" href="/form-score-club/photo-finale.html">2) Ajouter photo fin de match</a>
-          <a class="mini" id="goPhotos" href="/form-score-club/photos.html">3) Ajouter photos</a>
+          <button class="mini" id="goLive"  disabled>1) Ajouter score en direct</button>
+          <button class="mini" id="goFinal" disabled>2) Ajouter photo fin de match</button>
+          <button class="mini" id="goPhotos" disabled>3) Ajouter photos</button>
         </div>
-        <div class="muted">Sélectionnez un match ci-dessous puis cliquez sur l’action souhaitée.</div>
+        <div class="muted">Astuce : la sélection est gardée pendant la session.</div>
       </div>
 
-      <section class="matches">
-        <h3>Rencontres (J-2 → J+5)</h3>
-        <div id="matchesMsg" class="muted">Chargement des matchs…</div>
-        <div id="daysContainer"></div>
-      </section>
-
-      <footer class="muted">Astuce : QR code vers cette page. La sélection est gardée le temps de la session.</footer>
+      <footer class="muted">Retour depuis les formulaires → cette page, avec sélection conservée.</footer>
     </div>
   </div>
 
   <script>
-    // --- Config (même Google Sheet que ta version qui marchait) ---
+    // --- Config & utils (même que précédemment) ---
     const CONFIG = {
       gsheetCsvUrl:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQvskuueB25qKj0hbDWjFPomFdhfWRduUsNLp6Kv-za4t4oXcbbLsLrNsjwIt0ZH7C9B75pYBGDJfQu/pub?gid=0&single=true&output=csv',
       fields:{ match_id:'Code Gesthand', date:'Date', heure:'Heure', categorie:'Catégorie', genre:'Genre', championnat:'Championnat',
@@ -79,31 +84,21 @@
                winlose:'WinLose', gymnase:'Gymnase', ville:'Ville', photo:'PhotoEq' },
       dateWindow:{pastDays:2, futureDays:5}
     };
-
-    // --- utils ---
     const U = {
-      norm:s=> (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),
-      parseDateFR:v=>{ if(!v) return null; const m=String(v).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-        if(m){const d=m[1].padStart(2,'0'),mo=m[2].padStart(2,'0'),y=m[3]; return new Date(`${y}-${mo}-${d}T00:00:00`);}
-        const d=new Date(v); return isNaN(d)?null:d; },
+      parseDateFR:v=>{ if(!v) return null; const m=String(v).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m){const d=m[1].padStart(2,'0'),mo=m[2].padStart(2,'0'),y=m[3]; return new Date(`${y}-${mo}-${d}T00:00:00`);} const d=new Date(v); return isNaN(d)?null:d; },
       parseDateTimeFR:(ds,ts)=>{const d=U.parseDateFR(ds); if(!d)return null; const [h='00',m='00']=String(ts||'00:00').split(':'); const dt=new Date(d); dt.setHours(+h||0,+m||0,0,0); return dt;},
       fmtDate:d=> d?d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long'}):'',
       fmtTime:d=> d?d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'',
-      sameDay:(a,b)=> a&&b&&a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(),
     };
-
     const F=CONFIG.fields; const L=Object.fromEntries(Object.entries(F).map(([k,v])=>[k,(v||'').toLowerCase()]));
-
     function csvToRows(csv){const rows=[];let cur=[],i=0,f='',q=false;while(i<csv.length){const c=csv[i++];if(c==='"'){if(q&&csv[i]==='"'){f+='"';i++;}else q=!q;}else if(c===','&&!q){cur.push(f);f='';}else if((c==='\n'||c==='\r')&&!q){if(f!==''||cur.length){cur.push(f);rows.push(cur);cur=[];f='';}}else f+=c;}if(f!==''||cur.length){cur.push(f);rows.push(cur);}return rows.filter(r=>r.length&&r.join('').trim()!=='');}
-
     function saveSelection(m){ sessionStorage.setItem('selectedMatch', JSON.stringify(m)); }
     function getSelection(){ try{ return JSON.parse(sessionStorage.getItem('selectedMatch')||'null'); }catch{return null;} }
 
     async function loadMatches(){
       const msg=document.getElementById('matchesMsg');
       try{
-        msg.textContent='Chargement…';
-        const res=await fetch(CONFIG.gsheetCsvUrl,{cache:'no-store'}); if(!res.ok) throw new Error();
+        const res=await fetch(CONFIG.gsheetCsvUrl,{cache:'no-store'}); if(!res.ok) throw 0;
         const csv=await res.text(), rows=csvToRows(csv);
         const headers=rows.shift().map(h=>h.trim()); const idx=Object.fromEntries(headers.map((h,i)=>[h.toLowerCase(),i]));
         const items=rows.map(r=>{
@@ -117,13 +112,10 @@
                    eq1score:r[idx[L.eq1score]], eq2score:r[idx[L.eq2score]], winlose:r[idx[L.winlose]],
                    gymnase:r[idx[L.gymnase]], ville:r[idx[L.ville]], photo:(/^https?:\/\//.test(photo)?photo:'') };
         }).filter(x=>x&&x.match_id&&x._date);
-
-        // fenêtre J-2 → J+5
         const base=new Date(); base.setHours(0,0,0,0);
         const start=new Date(base); start.setDate(start.getDate()-(CONFIG.dateWindow.pastDays||2));
         const end=new Date(base); end.setDate(end.getDate()+(CONFIG.dateWindow.futureDays||5));
         const filtered=items.filter(x=>x._date>=start && x._date<=end).sort((a,b)=>a._date-b._date);
-
         renderList(filtered);
         msg.textContent='';
       }catch{ msg.textContent="Impossible de charger la liste des matchs."; }
@@ -157,7 +149,7 @@
               <div class="meta-line">${(m.categorie||m.genre||m.championnat)?`<span class="meta-cat">${[m.categorie,m.genre,m.championnat].filter(Boolean).join(' ')}</span>`:''}</div>
               <div class="meta-line">${(m.ville||m.gymnase)?`<span class="meta-place">${[m.ville,m.gymnase].filter(Boolean).join(' · ')}</span>`:''}</div>
             </div>
-            <div class="right">${m.photo?`<span class="thumb-wrap"><img class="thumb" src="${m.photo}" alt="Photo du match"></span>`:''}</div>`;
+            <div class="right"></div>`;
           btn.addEventListener('click',()=> onPick(m));
           list.appendChild(btn);
         });
@@ -170,18 +162,50 @@
       document.getElementById('selTeams').textContent=`${m.equipe1} vs ${m.equipe2}`;
       document.getElementById('selMeta').textContent=[U.fmtDate(m._date),U.fmtTime(m._date),m.categorie,m.championnat,m.ville].filter(Boolean).join(' · ');
       document.getElementById('selected').hidden=false;
+
+      // activer les actions
+      document.getElementById('needSelect').hidden = true;
+      ['goLive','goFinal','goPhotos'].forEach(id=>{
+        const el=document.getElementById(id);
+        el.disabled=false;
+      });
     }
 
-    document.getElementById('changeBtn').addEventListener('click',()=>{
-      sessionStorage.removeItem('selectedMatch');
-      document.getElementById('selected').hidden=true;
-    });
+    // actions : navigation SEULEMENT si un match a été choisi
+    function navIfSelected(path){
+      const sel=getSelection();
+      if(!sel){
+        document.getElementById('needSelect').hidden=false;
+        window.scrollTo({top:0,behavior:'smooth'});
+        return;
+      }
+      location.href='https://sportingvillette-beep.github.io/form-score-club/'+path;
+    }
+
+    // helpers storage
+    function getSelection(){ try{ return JSON.parse(sessionStorage.getItem('selectedMatch')||'null'); }catch{return null;} }
 
     // init
     (function init(){
+      // message si redirection depuis une page action sans sélection
+      if (new URLSearchParams(location.search).has('selectfirst')) {
+        document.getElementById('needSelect').hidden=false;
+        window.scrollTo({top:0,behavior:'smooth'});
+      }
       const already=getSelection();
       if(already){ onPick(already); }
       loadMatches();
+
+      document.getElementById('changeBtn').addEventListener('click',()=>{
+        sessionStorage.removeItem('selectedMatch');
+        document.getElementById('selected').hidden=true;
+        document.getElementById('needSelect').hidden=false;
+        ['goLive','goFinal','goPhotos'].forEach(id=>document.getElementById(id).disabled=true);
+      });
+
+      document.getElementById('goLive').addEventListener('click', ()=>navIfSelected('score.html'));
+      document.getElementById('goFinal').addEventListener('click',()=>navIfSelected('photo-finale.html'));
+      document.getElementById('goPhotos').addEventListener('click',()=>navIfSelected('photos.html'));
     })();
   </script>
 </body>
