@@ -1,69 +1,188 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Sporting Villette — Scores & Photos</title>
-<!-- chemin ABSOLU vers le CSS -->
-<link rel="stylesheet" href="https://sportingvillette-beep.github.io/form-score-club/assets/styles.css?v=1">
-<meta name="color-scheme" content="light dark" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sporting Villette — Scores & Photos</title>
+  <meta name="color-scheme" content="light dark" />
+  <style>
+    :root{--brand:#e4362b;--accent:#13b5a6;--deep:#10056b;--bg:#f1f1f1;--card:#ffffff;--text:#0f1522;--muted:#4b5565;--border:#cfd6df;--chip:#f6f8fb;--shadow:0 6px 20px rgba(16,21,34,.08)}
+    @media (prefers-color-scheme: dark){:root{--bg:#0d1117;--card:#0f141b;--text:#f3f5f8;--muted:#c5ccd6;--border:#2a3748;--chip:#172231}}
+    html,body{height:100%}body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:760px;margin:18px auto;padding:0 14px}.card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:18px}
+    header{display:flex;align-items:center;gap:12px;margin:6px 0 12px} header img{width:44px;height:44px;border-radius:10px;object-fit:cover;border:1px solid var(--border)}
+    .club{font-weight:800;letter-spacing:.2px;font-size:20px}.hint{font-size:12px;color:var(--muted)}
+    .toolbar{display:grid;gap:8px;margin:10px 0}.toolbar .row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+    .mini{display:inline-block;text-align:center;padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff;text-decoration:none;font-weight:800}
+    .selected{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 8px;padding:12px 14px;border:1px dashed var(--border);border-radius:14px;background:#fff}
+    .sel-teams{font-weight:900}.muted{color:var(--muted);font-size:12px}
+    .day-section{margin:14px 0 8px;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--card)}
+    .day-head{position:sticky;top:0;z-index:5;background:var(--card);padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:8px}
+    .day-title{font-weight:900;text-transform:capitalize}.day-sub{margin-left:auto;color:var(--muted);font-size:12px}
+    .list{display:grid;gap:10px;padding:10px 10px 14px}
+    .match-card{width:100%;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:var(--card);cursor:pointer}
+    .match-card:active{transform:scale(.99)} .time-col{display:flex;flex-direction:column;align-items:center;gap:6px}
+    .time-box{display:flex;align-items:center;justify-content:center;width:64px;padding:10px;border-radius:12px;background:#e8ecff;border:1px solid #ced6ff;color:var(--deep);font-weight:900}
+    .code-chip{font-size:11px;font-weight:800;letter-spacing:.2px;color:#2b3447;background:#eef1f6;border:1px solid var(--border);border-radius:999px;padding:4px 8px;line-height:1}
+    .teams{display:grid;gap:6px;min-width:0}.team-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px}
+    .team-name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.team-score{min-width:42px;text-align:right;font-weight:900;color:var(--deep)}
+    .meta-line{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}.meta-cat{color:var(--accent);font-weight:900;font-size:16px}.meta-place{color:var(--muted);font-size:13px}
+    .right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;justify-self:end}
+    .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;letter-spacing:.2px;padding:6px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--border)}
+    @media (max-width:420px){.match-card{grid-template-columns:64px 1fr auto}.right{grid-column:1 / -1;align-items:flex-start}}
+  </style>
 </head>
 <body>
-<div class="wrap">
-<div class="card">
-<header>
-<img alt="Logo du club" src="assets/logo.png" onerror="this.style.display='none'" />
-<div>
-<div class="club">Sporting Villette</div>
-<div class="hint">Liste des matchs — choisissez puis action</div>
-</div>
-</header>
+  <div class="wrap">
+    <div class="card">
+      <header>
+        <img alt="Logo du club" src="assets/logo.png" onerror="this.style.display='none'">
+        <div>
+          <div class="club">Sporting Villette</div>
+          <div class="hint">Liste des matchs — choisissez puis action</div>
+        </div>
+      </header>
 
+      <div id="selected" class="selected" hidden>
+        <div>
+          <div class="sel-teams" id="selTeams"></div>
+          <div class="muted" id="selMeta"></div>
+        </div>
+        <button type="button" id="changeBtn" class="mini">Changer</button>
+      </div>
 
-<div id="selected" class="selected" hidden>
-<div>
-<div class="sel-teams" id="selTeams"></div>
-<div class="muted" id="selMeta"></div>
-</div>
-<button type="button" id="changeBtn" class="mini">Changer</button>
-</div>
+      <div class="toolbar">
+        <div class="row">
+          <a class="mini" id="goLive"  href="/form-score-club/score.html">1) Ajouter score en direct</a>
+          <a class="mini" id="goFinal" href="/form-score-club/photo-finale.html">2) Ajouter photo fin de match</a>
+          <a class="mini" id="goPhotos" href="/form-score-club/photos.html">3) Ajouter photos</a>
+        </div>
+        <div class="muted">Sélectionnez un match ci-dessous puis cliquez sur l’action souhaitée.</div>
+      </div>
 
+      <section class="matches">
+        <h3>Rencontres (J-2 → J+5)</h3>
+        <div id="matchesMsg" class="muted">Chargement des matchs…</div>
+        <div id="daysContainer"></div>
+      </section>
 
-<div class="toolbar">
-<div class="row">
-<a class="mini" id="goLive"  href="https://sportingvillette-beep.github.io/form-score-club/score.html">1) Ajouter score en direct</a>
-<a class="mini" id="goFinal" href="https://sportingvillette-beep.github.io/form-score-club/photo-finale.html">2) Ajouter photo fin de match</a>
-<a class="mini" id="goPhotos" href="https://sportingvillette-beep.github.io/form-score-club/photos.html">3) Ajouter photos</a>
+      <footer class="muted">Astuce : QR code vers cette page. La sélection est gardée le temps de la session.</footer>
+    </div>
+  </div>
 
-</div>
-<div class="muted">Sélectionnez un match ci-dessous puis cliquez sur l’action souhaitée.</div>
-</div>
+  <script>
+    // --- Config (même Google Sheet que ta version qui marchait) ---
+    const CONFIG = {
+      gsheetCsvUrl:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQvskuueB25qKj0hbDWjFPomFdhfWRduUsNLp6Kv-za4t4oXcbbLsLrNsjwIt0ZH7C9B75pYBGDJfQu/pub?gid=0&single=true&output=csv',
+      fields:{ match_id:'Code Gesthand', date:'Date', heure:'Heure', categorie:'Catégorie', genre:'Genre', championnat:'Championnat',
+               equipe1:'Eq1', equipe1x:'Eq1X', equipe2:'Eq2', equipe2x:'Eq2X', eq1score:'Eq1Score', eq2score:'Eq2Score',
+               winlose:'WinLose', gymnase:'Gymnase', ville:'Ville', photo:'PhotoEq' },
+      dateWindow:{pastDays:2, futureDays:5}
+    };
 
+    // --- utils ---
+    const U = {
+      norm:s=> (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),
+      parseDateFR:v=>{ if(!v) return null; const m=String(v).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+        if(m){const d=m[1].padStart(2,'0'),mo=m[2].padStart(2,'0'),y=m[3]; return new Date(`${y}-${mo}-${d}T00:00:00`);}
+        const d=new Date(v); return isNaN(d)?null:d; },
+      parseDateTimeFR:(ds,ts)=>{const d=U.parseDateFR(ds); if(!d)return null; const [h='00',m='00']=String(ts||'00:00').split(':'); const dt=new Date(d); dt.setHours(+h||0,+m||0,0,0); return dt;},
+      fmtDate:d=> d?d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long'}):'',
+      fmtTime:d=> d?d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'',
+      sameDay:(a,b)=> a&&b&&a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(),
+    };
 
-<section class="matches">
-<h3>Rencontres (J-2 → J+5)</h3>
-<div id="matchesMsg" class="muted">Chargement des matchs…</div>
-<div id="daysContainer"></div>
-</section>
+    const F=CONFIG.fields; const L=Object.fromEntries(Object.entries(F).map(([k,v])=>[k,(v||'').toLowerCase()]));
 
+    function csvToRows(csv){const rows=[];let cur=[],i=0,f='',q=false;while(i<csv.length){const c=csv[i++];if(c==='"'){if(q&&csv[i]==='"'){f+='"';i++;}else q=!q;}else if(c===','&&!q){cur.push(f);f='';}else if((c==='\n'||c==='\r')&&!q){if(f!==''||cur.length){cur.push(f);rows.push(cur);cur=[];f='';}}else f+=c;}if(f!==''||cur.length){cur.push(f);rows.push(cur);}return rows.filter(r=>r.length&&r.join('').trim()!=='');}
 
-<footer class="muted">Astuce : QR code vers cette page. La sélection est gardée le temps de la session.</footer>
-</div>
-</div>
+    function saveSelection(m){ sessionStorage.setItem('selectedMatch', JSON.stringify(m)); }
+    function getSelection(){ try{ return JSON.parse(sessionStorage.getItem('selectedMatch')||'null'); }catch{return null;} }
 
+    async function loadMatches(){
+      const msg=document.getElementById('matchesMsg');
+      try{
+        msg.textContent='Chargement…';
+        const res=await fetch(CONFIG.gsheetCsvUrl,{cache:'no-store'}); if(!res.ok) throw new Error();
+        const csv=await res.text(), rows=csvToRows(csv);
+        const headers=rows.shift().map(h=>h.trim()); const idx=Object.fromEntries(headers.map((h,i)=>[h.toLowerCase(),i]));
+        const items=rows.map(r=>{
+          const d=r[idx[L.date]], h=r[idx[L.heure]], dt=U.parseDateTimeFR(d,h);
+          const e1=(r[idx[L.equipe1]]||'').trim(), e1x=(r[idx[L.equipe1x]]||'').trim();
+          const e2=(r[idx[L.equipe2]]||'').trim(), e2x=(r[idx[L.equipe2x]]||'').trim();
+          const photo=(r[idx[L.photo]]||'').trim();
+          return { match_id:r[idx[L.match_id]], date_str:d, heure_str:h, _date:dt,
+                   categorie:r[idx[L.categorie]], genre:r[idx[L.genre]]||'', championnat:r[idx[L.championnat]],
+                   equipe1:(e1+(e1x?` ${e1x}`:'' )).trim(), equipe2:(e2+(e2x?` ${e2x}`:'' )).trim(),
+                   eq1score:r[idx[L.eq1score]], eq2score:r[idx[L.eq2score]], winlose:r[idx[L.winlose]],
+                   gymnase:r[idx[L.gymnase]], ville:r[idx[L.ville]], photo:(/^https?:\/\//.test(photo)?photo:'') };
+        }).filter(x=>x&&x.match_id&&x._date);
 
-<script type="module">
-  import {attachSelectionUI, getSelection} from 'https://sportingvillette-beep.github.io/form-score-club/assets/forms.js?v=1';
-  attachSelectionUI();
-  const updateLinks = () => {
-    const sel = getSelection?.();
-    ['goLive','goFinal','goPhotos'].forEach(id => {
-      const a = document.getElementById(id);
-      if (a) a.classList.toggle('disabled', !sel);
+        // fenêtre J-2 → J+5
+        const base=new Date(); base.setHours(0,0,0,0);
+        const start=new Date(base); start.setDate(start.getDate()-(CONFIG.dateWindow.pastDays||2));
+        const end=new Date(base); end.setDate(end.getDate()+(CONFIG.dateWindow.futureDays||5));
+        const filtered=items.filter(x=>x._date>=start && x._date<=end).sort((a,b)=>a._date-b._date);
+
+        renderList(filtered);
+        msg.textContent='';
+      }catch{ msg.textContent="Impossible de charger la liste des matchs."; }
+    }
+
+    function renderList(matches){
+      const container=document.getElementById('daysContainer'); container.innerHTML='';
+      const byDay={};
+      for(const m of matches){
+        const k=new Date(m._date.getFullYear(),m._date.getMonth(),m._date.getDate()).toISOString();
+        (byDay[k] ||= []).push(m);
+      }
+      const keys=Object.keys(byDay).sort((a,b)=> new Date(a)-new Date(b));
+      for(const k of keys){
+        const d=new Date(k);
+        const sec=document.createElement('div'); sec.className='day-section';
+        sec.innerHTML=`<div class="day-head"><div class="day-title">${U.fmtDate(d)}</div><div class="day-sub">${byDay[k].length} match${byDay[k].length>1?'s':''}</div></div>`;
+        const list=document.createElement('div'); list.className='list';
+        byDay[k].forEach(m=>{
+          const s1=(m.eq1score!==''&&m.eq1score!=null)?Number(m.eq1score):null;
+          const s2=(m.eq2score!==''&&m.eq2score!=null)?Number(m.eq2score):null;
+          const btn=document.createElement('button'); btn.type='button'; btn.className='match-card';
+          btn.innerHTML=`
+            <div class="time-col">
+              <div class="time-box">${U.fmtTime(m._date)}</div>
+              <div class="code-chip">${m.match_id}</div>
+            </div>
+            <div class="teams">
+              <div class="team-row"><div class="team-name">${m.equipe1}</div><div class="team-score">${s1??''}</div></div>
+              <div class="team-row"><div class="team-name">${m.equipe2}</div><div class="team-score">${s2??''}</div></div>
+              <div class="meta-line">${(m.categorie||m.genre||m.championnat)?`<span class="meta-cat">${[m.categorie,m.genre,m.championnat].filter(Boolean).join(' ')}</span>`:''}</div>
+              <div class="meta-line">${(m.ville||m.gymnase)?`<span class="meta-place">${[m.ville,m.gymnase].filter(Boolean).join(' · ')}</span>`:''}</div>
+            </div>
+            <div class="right">${m.photo?`<span class="thumb-wrap"><img class="thumb" src="${m.photo}" alt="Photo du match"></span>`:''}</div>`;
+          btn.addEventListener('click',()=> onPick(m));
+          list.appendChild(btn);
+        });
+        sec.appendChild(list); container.appendChild(sec);
+      }
+    }
+
+    function onPick(m){
+      saveSelection(m);
+      document.getElementById('selTeams').textContent=`${m.equipe1} vs ${m.equipe2}`;
+      document.getElementById('selMeta').textContent=[U.fmtDate(m._date),U.fmtTime(m._date),m.categorie,m.championnat,m.ville].filter(Boolean).join(' · ');
+      document.getElementById('selected').hidden=false;
+    }
+
+    document.getElementById('changeBtn').addEventListener('click',()=>{
+      sessionStorage.removeItem('selectedMatch');
+      document.getElementById('selected').hidden=true;
     });
-  };
-  setInterval(updateLinks, 500);
-</script>
 
+    // init
+    (function init(){
+      const already=getSelection();
+      if(already){ onPick(already); }
+      loadMatches();
+    })();
+  </script>
 </body>
 </html>
