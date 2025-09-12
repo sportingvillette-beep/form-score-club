@@ -71,7 +71,8 @@
 
 
 <script type="module">
-import {attachSelectionUI, wireLiveScoreForm, wireDropzone} from './assets/forms.js';
+// Chemin ABSOLU vers forms.js
+import {attachSelectionUI, getSelection} from '/form-score-club/assets/forms.js';
 attachSelectionUI();
 wireLiveScoreForm();
 wireDropzone('photo','preview','dz');
