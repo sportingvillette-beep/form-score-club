@@ -27,7 +27,7 @@ fd.append('match_id', sel?.match_id||'');
 fd.append('equipe1_label', sel?.equipe1||'');
 fd.append('equipe2_label', sel?.equipe2||'');
 fd.append('meta', [U.fmtDate(sel?._date), U.fmtTime(sel?._date), sel?.categorie, sel?.ville].filter(Boolean).join(' · '));
-fd.append('photo_finale', document.getElementById('photo2').files[0]);
+fd.append('photo', document.getElementById('photo2').files[0]);
 
 
 try{
