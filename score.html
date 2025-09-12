@@ -1,10 +1,37 @@
 <!doctype html>
-<html lang="fr"><head>
-<meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Ajouter score — Sporting Villette</title>
-<meta name="color-scheme" content="light dark" />
-<link rel="stylesheet" href="https://sportingvillette-beep.github.io/form-score-club/assets/styles.css?v=2">
-</head><body>
+<html lang="fr"
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><!-- ton titre --></title>
+  <meta name="color-scheme" content="light dark" />
+
+  <!-- 1) lien vers la feuille externe (avec anti-cache) -->
+  <link rel="stylesheet" href="https://sportingvillette-beep.github.io/form-score-club/assets/styles.css?v=4">
+
+  <!-- 2) Fallback minimal (au cas où la feuille externe ne charge pas) -->
+  <style>
+    :root{--brand:#e4362b;--accent:#13b5a6;--bg:#f1f1f1;--text:#0f1522;--border:#cfd6df}
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:760px;margin:18px auto;padding:0 14px}
+    .card{background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 6px 20px rgba(16,21,34,.08);padding:18px}
+    header{display:flex;align-items:center;gap:12px;margin:6px 0 12px}
+    header img{width:44px;height:44px;border-radius:10px;border:1px solid var(--border);object-fit:cover}
+    .club{font-weight:800;font-size:20px}
+    .hint{font-size:12px;opacity:.7}
+    .mini{display:inline-block;text-align:center;padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff;text-decoration:none;font-weight:800;border:none;cursor:pointer}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .row.one{grid-template-columns:1fr}
+    input,select,button{font-size:18px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#fff}
+    .selected{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 8px;padding:12px 14px;border:1px dashed var(--border);border-radius:14px;background:#fff}
+    .sel-teams{font-weight:900}.muted{opacity:.7;font-size:12px}
+    .dropzone{border:2px dashed var(--border);border-radius:14px;padding:14px;text-align:center;background:#fff}
+    #preview,#preview2{max-width:100%;max-height:220px;border-radius:12px;display:none;margin-top:8px;border:1px solid var(--border)}
+    .msg{min-height:20px}
+  </style>
+</head>
+
+<body>
 <div class="wrap"><div class="card">
   <header>
     <img alt="Logo du club" src="/form-score-club/assets/logo.png" onerror="this.style.display='none'">
