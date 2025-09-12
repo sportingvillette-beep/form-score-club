@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ajouter photos — Sporting Villette</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div class="wrap"><div class="card">
+<header>
+<img alt="Logo du club" src="assets/logo.png" onerror="this.style.display='none'" />
+<div>
+<div class="club">Ajouter des photos</div>
+<div class="hint">Pour tout match (en cours ou prévu)</div>
+</div>
+<a class="mini" style="margin-left:auto" href="index.html">Accueil</a>
+</header>
+
+
+<div id="selected" class="selected" hidden>
+<div>
+<div class="sel-teams" id="selTeams"></div>
+<div class="muted" id="selMeta"></div>
+</div>
+<button type="button" id="changeBtn" class="mini">Changer</button>
+</div>
+
+
+<section class="matches">
+<h3>Choisir une rencontre</h3>
+<div id="matchesMsg" class="muted">Chargement des matchs…</div>
+<div id="daysContainer"></div>
+</section>
+
+
+<form id="fPhoto" class="mt">
+<h3>Ajouter une photo</h3>
+<div class="dropzone" id="dz2">
+<div class="dz-title">Image</div>
+<input type="file" name="photo" id="photo2" accept="image/*">
+<img id="preview2" alt="Aperçu photo" />
+</div>
+<div class="actions">
+<button type="submit" id="btn2">Envoyer photo</button>
+<div class="msg muted" id="msg2" role="status" aria-live="polite"></div>
+</div>
+</form>
+
+
+<footer class="muted">Après envoi, retour automatique à l’accueil.</footer>
+</div></div>
+
+
+<script type="module">
+import {attachSelectionUI, wireGenericPhotoForm, wireDropzone} from './assets/forms.js';
+attachSelectionUI();
+wireGenericPhotoForm();
+wireDropzone('photo2','preview2','dz2');
+</script>
+</body>
+</html>
