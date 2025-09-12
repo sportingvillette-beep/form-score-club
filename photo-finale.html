@@ -38,14 +38,14 @@
   </div>
   <p id="infoFinale" class="muted"></p>
 
-  <form id="fPhoto">
+  <form id="f">
     <div class="dropzone" id="dz2">
       <div class="dz-title">Image</div>
-      <input type="file" name="photo" id="photo2" accept="image/*">
-      <img id="preview2" alt="Aperçu photo" />
+      <input type="file" name="" id="2" accept="image/*">
+      <img id="preview2" alt="Aperçu " />
     </div>
     <div class="actions">
-      <button type="submit" id="btn2" class="mini">Envoyer photo</button>
+      <button type="submit" id="btn2" class="mini">Envoyer </button>
       <div class="msg muted" id="msg2"></div>
     </div>
   </form>
@@ -54,7 +54,7 @@
 </div></div>
 
 <script>
-const CONFIG={ webhookPhotoUrl:'https://hook.eu2.make.com/40xiygzru2pfcgwooofj7ewouwqqddsi', maxSizeMB:10 };
+const CONFIG={ webhookUrl:'https://hook.eu2.make.com/12s2f2licqusjj1xiw3p3tulrfnd5dgw', maxSizeMB:10 };
 const U={d:d=>new Date(d), fmtDate:d=>U.d(d).toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long'}), fmtTime:d=>U.d(d).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})};
 function getSelection(){ try{ return JSON.parse(sessionStorage.getItem('selectedMatch')||'null'); }catch{return null;} }
 function isFinished(w){return /(victoire|defaite|défaite|match\s*nul|termine|terminé)/i.test(String(w||''));}
@@ -65,13 +65,13 @@ function requireSelection(){ const sel=getSelection(); if(!sel){ location.href='
   selTeams.textContent=`${sel.equipe1} vs ${sel.equipe2}`;
   selMeta.textContent=[U.fmtDate(sel._date),U.fmtTime(sel._date),sel.categorie,sel.championnat,sel.ville].filter(Boolean).join(' · ');
   selBox.hidden=false;
-  infoFinale.textContent = isFinished(sel.winlose)? 'Match terminé ✅ — vous pouvez ajouter une photo finale.' : '⚠️ Réservé aux matchs terminés.';
+  infoFinale.textContent = isFinished(sel.winlose)? 'Match terminé ✅ — vous pouvez ajouter une  finale.' : '⚠️ Réservé aux matchs terminés.';
 })();
 
 // dropzone + submit
 ['dragenter','dragover'].forEach(evt=>dz2.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz2.classList.add('drag')}));
 ['dragleave','drop'].forEach(evt=>dz2.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz2.classList.remove('drag')}));
-dz2.addEventListener('drop',e=>{ if(e.dataTransfer.files?.length){ photo2.files=e.dataTransfer.files; photo2.dispatchEvent(new Event('change')); } });
+dz2.addEventListener('drop',e=>{ if(e.dataTransfer.files?.length){ 2.files=e.dataTransfer.files; 2.dispatchEvent(new Event('change')); } });
 photo2.addEventListener('change',()=>{ const f=photo2.files[0]; if(!f){ preview2.style.display='none'; preview2.src=''; return; } preview2.src=URL.createObjectURL(f); preview2.style.display='block'; });
 
 fPhoto.addEventListener('submit', async (e)=>{
