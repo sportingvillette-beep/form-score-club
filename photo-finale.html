@@ -1,71 +1,174 @@
 <!doctype html>
 <html lang="fr">
-
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Photo fin de match — Sporting Villette</title>
-<!-- chemin ABSOLU vers le CSS -->
-<link rel="stylesheet" href="https://sportingvillette-beep.github.io/form-score-club/assets/styles.css?v=1">
-<meta name="color-scheme" content="light dark" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Photo fin de match — Sporting Villette</title>
+  <meta name="color-scheme" content="light dark" />
+  <link rel="stylesheet" href="https://sportingvillette-beep.github.io/form-score-club/assets/styles.css?v=1">
 </head>
- 
 <body>
-<div class="wrap"><div class="card">
-<header>
-<img alt="Logo du club" src="assets/logo.png" onerror="this.style.display='none'" />
-<div>
-<div class="club">Photo fin de match</div>
-<div class="hint">Réservé aux matchs terminés</div>
-</div>
-<a class="mini" style="margin-left:auto" href="https://sportingvillette-beep.github.io/form-score-club/index.html">Accueil</a>
-</header>
+  <div class="wrap"><div class="card">
+    <header>
+      <img alt="Logo du club" src="/form-score-club/assets/logo.png" onerror="this.style.display='none'">
+      <div>
+        <div class="club">Photo fin de match</div>
+        <div class="hint">Réservé aux matchs terminés</div>
+      </div>
+      <a class="mini" style="margin-left:auto" href="https://sportingvillette-beep.github.io/form-score-club/index.html">Accueil</a>
+    </header>
 
+    <div id="selected" class="selected" hidden>
+      <div>
+        <div class="sel-teams" id="selTeams"></div>
+        <div class="muted" id="selMeta"></div>
+      </div>
+      <button type="button" id="changeBtn" class="mini">Changer</button>
+    </div>
 
-<div id="selected" class="selected" hidden>
-<div>
-<div class="sel-teams" id="selTeams"></div>
-<div class="muted" id="selMeta"></div>
-</div>
-<button type="button" id="changeBtn" class="mini">Changer</button>
-</div>
+    <section class="matches">
+      <h3>Choisir une rencontre</h3>
+      <div id="matchesMsg" class="muted">Chargement des matchs…</div>
+      <div id="daysContainer"></div>
+    </section>
 
+    <p id="infoFinale" class="muted"></p>
 
-<section class="matches">
-<h3>Choisir une rencontre</h3>
-<div id="matchesMsg" class="muted">Chargement des matchs…</div>
-<div id="daysContainer"></div>
-</section>
+    <form id="fPhoto">
+      <h3>Ajouter une photo</h3>
+      <div class="dropzone" id="dz2">
+        <div class="dz-title">Image</div>
+        <input type="file" name="photo_finale" id="photo2" accept="image/*">
+        <div class="muted">Cette photo partira vers l’archivage (Dropbox).</div>
+        <img id="preview2" alt="Aperçu photo" />
+      </div>
+      <div class="actions">
+        <button type="submit" id="btn2">Envoyer photo</button>
+        <div class="msg muted" id="msg2" role="status" aria-live="polite"></div>
+      </div>
+    </form>
 
+    <footer class="muted">Après envoi, retour automatique à l’accueil.</footer>
+  </div></div>
 
-<p id="infoFinale" class="muted"></p>
+  <script>
+    const CONFIG = {
+      gsheetCsvUrl:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQvskuueB25qKj0hbDWjFPomFdhfWRduUsNLp6Kv-za4t4oXcbbLsLrNsjwIt0ZH7C9B75pYBGDJfQu/pub?gid=0&single=true&output=csv',
+      webhookPhotoUrl:'https://hook.eu2.make.com/40xiygzru2pfcgwooofj7ewouwqqddsi',
+      fields:{match_id:'Code Gesthand',date:'Date',heure:'Heure',categorie:'Catégorie',genre:'Genre',championnat:'Championnat',equipe1:'Eq1',equipe1x:'Eq1X',equipe2:'Eq2',equipe2x:'Eq2X',eq1score:'Eq1Score',eq2score:'Eq2Score',winlose:'WinLose',gymnase:'Gymnase',ville:'Ville',photo:'PhotoEq'},
+      dateWindow:{pastDays:2,futureDays:5}, maxSizeMB:10
+    };
+    const U={parseDateFR:v=>{if(!v)return null;const m=String(v).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(m){const d=m[1].padStart(2,'0'),mo=m[2].padStart(2,'0'),y=m[3];return new Date(`${y}-${mo}-${d}T00:00:00`);}const d=new Date(v);return isNaN(d)?null:d;},
+      parseDateTimeFR:(ds,ts)=>{const d=U.parseDateFR(ds);if(!d)return null;const[h='00',m='00']=String(ts||'00:00').split(':');const dt=new Date(d);dt.setHours(+h||0,+m||0,0,0);return dt;},
+      fmtDate:d=> d?d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long'}):'',
+      fmtTime:d=> d?d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):''};
+    const F=CONFIG.fields; const L=Object.fromEntries(Object.entries(F).map(([k,v])=>[k,(v||'').toLowerCase()]));
+    function csvToRows(csv){const rows=[];let cur=[],i=0,f='',q=false;while(i<csv.length){const c=csv[i++];if(c==='"'){if(q&&csv[i]==='"'){f+='"';i++;}else q=!q;}else if(c===','&&!q){cur.push(f);f='';}else if((c==='\n'||c==='\r')&&!q){if(f!==''||cur.length){cur.push(f);rows.push(cur);cur=[];f='';}}else f+=c;}if(f!==''||cur.length){cur.push(f);rows.push(cur);}return rows.filter(r=>r.length&&r.join('').trim()!=='');}
+    function saveSelection(m){ sessionStorage.setItem('selectedMatch', JSON.stringify(m)); }
+    function getSelection(){ try{ return JSON.parse(sessionStorage.getItem('selectedMatch')||'null'); }catch{return null;} }
+    function isFinished(winlose){ if(!winlose) return false; return /(victoire|defaite|défaite|match\\s*nul|termine|terminé)/i.test(String(winlose)); }
 
+    async function loadMatches(){
+      const msg=document.getElementById('matchesMsg');
+      try{
+        const res=await fetch(CONFIG.gsheetCsvUrl,{cache:'no-store'}); if(!res.ok) throw 0;
+        const csv=await res.text(), rows=csvToRows(csv);
+        const headers=rows.shift().map(h=>h.trim()); const idx=Object.fromEntries(headers.map((h,i)=>[h.toLowerCase(),i]));
+        const items=rows.map(r=>{
+          const d=r[idx[L.date]], h=r[idx[L.heure]], dt=U.parseDateTimeFR(d,h);
+          const e1=(r[idx['eq1']])||'', e1x=(r[idx['eq1x']])||'';
+          const e2=(r[idx['eq2']])||'', e2x=(r[idx['eq2x']])||'';
+          return { match_id:r[idx[L.match_id]], _date:dt, categorie:r[idx[L.categorie]], championnat:r[idx[L.championnat]], ville:r[idx[L.ville]],
+                   equipe1:(e1+(e1x?` ${e1x}`:'' )).trim(), equipe2:(e2+(e2x?` ${e2x}`:'' )).trim(), winlose:r[idx[L.winlose]] };
+        }).filter(x=>x&&x.match_id&&x._date);
+        const base=new Date(); base.setHours(0,0,0,0);
+        const start=new Date(base); start.setDate(start.getDate()-(CONFIG.dateWindow.pastDays||2));
+        const end=new Date(base); end.setDate(end.getDate()+(CONFIG.dateWindow.futureDays||5));
+        const filtered=items.filter(x=>x._date>=start && x._date<=end).sort((a,b)=>a._date-b._date);
+        renderList(filtered);
+        msg.textContent='';
+      }catch{ msg.textContent="Impossible de charger la liste des matchs."; }
+    }
+    function renderList(matches){
+      const container=document.getElementById('daysContainer'); container.innerHTML='';
+      const byDay={}; for(const m of matches){ const k=new Date(m._date.getFullYear(),m._date.getMonth(),m._date.getDate()).toISOString(); (byDay[k] ||= []).push(m); }
+      const keys=Object.keys(byDay).sort((a,b)=> new Date(a)-new Date(b));
+      for(const k of keys){
+        const d=new Date(k);
+        const sec=document.createElement('div'); sec.className='day-section';
+        sec.innerHTML=`<div class="day-head"><div class="day-title">${U.fmtDate(d)}</div><div class="day-sub">${byDay[k].length} match${byDay[k].length>1?'s':''}</div></div>`;
+        const list=document.createElement('div'); list.className='list';
+        byDay[k].forEach(m=>{
+          const btn=document.createElement('button'); btn.type='button'; btn.className='match-card';
+          btn.innerHTML=`
+            <div class="time-col"><div class="time-box">${U.fmtTime(m._date)}</div><div class="code-chip">${m.match_id}</div></div>
+            <div class="teams">
+              <div class="team-row"><div class="team-name">${m.equipe1}</div><div></div></div>
+              <div class="team-row"><div class="team-name">${m.equipe2}</div><div></div></div>
+              <div class="meta-line"><span class="meta-cat">${[m.categorie,m.championnat].filter(Boolean).join(' ')}</span></div>
+              <div class="meta-line"><span class="meta-place">${[m.ville].filter(Boolean).join(' · ')}</span></div>
+            </div><div class="right"></div>`;
+          btn.addEventListener('click',()=> onPick(m));
+          list.appendChild(btn);
+        });
+        sec.appendChild(list); container.appendChild(sec);
+      }
+    }
+    function onPick(m){
+      saveSelection(m);
+      document.getElementById('selTeams').textContent=`${m.equipe1} vs ${m.equipe2}`;
+      document.getElementById('selMeta').textContent=[U.fmtDate(m._date),U.fmtTime(m._date),m.categorie,m.championnat,m.ville].filter(Boolean).join(' · ');
+      document.getElementById('selected').hidden=false;
+      document.getElementById('infoFinale').textContent = isFinished(m.winlose)? 'Match terminé ✅ — vous pouvez ajouter une photo finale.' : '⚠️ Cette action est réservée aux matchs terminés.';
+    }
 
-<form id="fPhoto" class="mt">
-<h3>Ajouter une photo</h3>
-<div class="dropzone" id="dz2">
-<div class="dz-title">Image</div>
-<input type="file" name="photo_finale" id="photo2" accept="image/*">
-<div class="muted">Cette photo partira vers l’archivage (Dropbox).</div>
-<img id="preview2" alt="Aperçu photo" />
-</div>
-<div class="actions">
-<button type="submit" id="btn2">Envoyer photo</button>
-<div class="msg muted" id="msg2" role="status" aria-live="polite"></div>
-</div>
-</form>
+    // dropzone
+    const dz2=document.getElementById('dz2'), file2=document.getElementById('photo2'), prev2=document.getElementById('preview2');
+    ['dragenter','dragover'].forEach(evt=>dz2.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz2.classList.add('drag')}));
+    ['dragleave','drop'].forEach(evt=>dz2.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz2.classList.remove('drag')}));
+    dz2.addEventListener('drop',e=>{ if(e.dataTransfer.files?.length){ file2.files=e.dataTransfer.files; file2.dispatchEvent(new Event('change')); } });
+    file2.addEventListener('change',()=>{ const f=file2.files[0]; if(!f){ prev2.style.display='none'; prev2.src=''; return; } prev2.src=URL.createObjectURL(f); prev2.style.display='block'; });
 
+    // submit
+    document.getElementById('fPhoto').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const msg=document.getElementById('msg2'); const btn=document.getElementById('btn2');
+      const sel=getSelection();
+      const f=file2.files[0];
+      if(!f){ msg.textContent='Choisissez une photo.'; msg.className='msg err'; return; }
+      if (f && f.size > CONFIG.maxSizeMB*1024*1024){ msg.textContent=`Fichier trop lourd (max ${CONFIG.maxSizeMB} Mo).`; msg.className='msg err'; return; }
 
-<footer class="muted">Après envoi, retour automatique à l’accueil.</footer>
-</div></div>
+      const fd=new FormData();
+      fd.append('match_id', sel?.match_id||'');
+      fd.append('equipe1_label', sel?.equipe1||'');
+      fd.append('equipe2_label', sel?.equipe2||'');
+      fd.append('meta', [U.fmtDate(sel?._date), U.fmtTime(sel?._date), sel?.categorie, sel?.ville].filter(Boolean).join(' · '));
+      fd.append('photo_finale', f);
 
+      try{
+        btn.disabled=true; btn.textContent='Envoi…'; msg.textContent='Transmission sécurisée…'; msg.className='msg muted';
+        const res=await fetch(CONFIG.webhookPhotoUrl,{method:'POST', body:fd});
+        if(!res.ok) throw 0;
+        msg.textContent='Photo envoyée pour archivage !'; msg.className='msg ok';
+        setTimeout(()=>{ location.href='https://sportingvillette-beep.github.io/form-score-club/index.html#ok'; }, 600);
+      }catch{
+        msg.textContent='Erreur d’envoi. Réessayez.'; msg.className='msg err';
+      }finally{
+        btn.disabled=false; btn.textContent='Envoyer photo';
+      }
+    });
 
-<script type="module">
-  import {attachSelectionUI, wireFinalPhotoForm, wireDropzone} from 'https://sportingvillette-beep.github.io/form-score-club/assets/forms.js?v=1';
-  attachSelectionUI();
-  wireFinalPhotoForm();
-  wireDropzone('photo2','preview2','dz2');
-</script>
+    document.getElementById('changeBtn').addEventListener('click',()=>{
+      sessionStorage.removeItem('selectedMatch');
+      document.getElementById('selected').hidden=true;
+      document.getElementById('infoFinale').textContent='';
+    });
 
+    (function init(){
+      const sel=getSelection();
+      if(sel){ onPick(sel); }
+      loadMatches();
+    })();
+  </script>
 </body>
 </html>
