@@ -22,6 +22,8 @@
     input,select,button{font-size:18px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#fff}
     .actions{display:grid;gap:8px;margin-top:10px}
     .msg{min-height:20px}
+    /* mini debug */
+    #dbg{display:none;background:#fee;border:1px solid #f99;border-radius:8px;padding:8px;margin-bottom:8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;white-space:pre-wrap}
   </style>
 </head>
 <body>
@@ -32,6 +34,8 @@
       <a class="mini" style="margin-left:auto" href="https://sportingvillette-beep.github.io/form-score-club/">Accueil</a>
     </header>
 
+    <pre id="dbg"></pre>
+
     <!-- rappel de la sélection -->
     <div class="selected" id="selBox" hidden>
       <div>
@@ -40,7 +44,7 @@
       </div>
     </div>
 
-    <!-- FORMULAIRE (sans zone photo) -->
+    <!-- FORMULAIRE (sans photo) -->
     <form id="f" novalidate>
       <input type="hidden" name="match_id" id="match_id">
       <label>État du match
@@ -88,6 +92,7 @@ function getSelection(){ try{ return JSON.parse(sessionStorage.getItem('selected
 function isFinished(w){return /(victoire|defaite|défaite|match\s*nul|termine|terminé)/i.test(String(w||''));}
 function requireSelection(){ const sel=getSelection(); if(!sel){ location.href='https://sportingvillette-beep.github.io/form-score-club/?selectfirst=1'; return null; } return sel; }
 
+// --------- INIT UI ---------
 (function init(){
   const sel=requireSelection(); if(!sel) return;
   document.getElementById('selTeams').textContent=`${sel.equipe1} vs ${sel.equipe2}`;
@@ -101,6 +106,7 @@ function requireSelection(){ const sel=getSelection(); if(!sel){ location.href='
   toggleTempsByEtat();
 })();
 
+// --------- LOGIQUE FORMULAIRE ---------
 const etatEl=document.getElementById('etat_match');
 const tempsWrap=document.getElementById('temps_wrapper');
 const tempsEl=document.getElementById('temps_jeu');
@@ -126,32 +132,57 @@ sdEl.addEventListener('input',computeResult);
 seEl.addEventListener('input',computeResult);
 tempsEl.addEventListener('input',()=>{ if((tempsEl.value||'').trim()!==''){ etatEl.value='en_cours'; toggleTempsByEtat(); }});
 
-// submit (sans gestion de photo)
+// --------- ENVOI ---------
 document.getElementById('f').addEventListener('submit', async (e)=>{
   e.preventDefault();
   const msg=document.getElementById('msg'); const btn=document.getElementById('btn');
+  msg.textContent='';
+
+  // validations minimales
   if(document.getElementById('match_id').value.trim()==='' || sdEl.value==='' || seEl.value===''){
     msg.textContent='Complétez les champs requis.'; msg.className='msg err'; return;
   }
+
   const fd=new FormData(e.target);
+
+  // WinLose calculé
   if(etatEl.value==='en_cours'){
-    const t=(tempsEl.value||'').trim(); if(!t){ msg.textContent='Indiquez le temps de jeu.'; msg.className='msg err'; return; }
+    const t=(tempsEl.value||'').trim();
+    if(!t){ msg.textContent='Indiquez le temps de jeu.'; msg.className='msg err'; return; }
     fd.set('WinLose', `${parseInt(t,10)}e`);
   } else {
-    computeResult(); fd.set('WinLose', statutEl.value||'Terminé');
+    computeResult();
+    fd.set('WinLose', statutEl.value || 'Terminé'); // <-- bien 'statutEl'
   }
-  const sel=getSelection(); if(sel){ fd.append('equipe1_label', sel.equipe1||''); fd.append('equipe2_label', sel.equipe2||''); }
+
+  // labels utiles pour back-office
+  const sel=getSelection();
+  if(sel){ fd.append('equipe1_label', sel.equipe1||''); fd.append('equipe2_label', sel.equipe2||''); }
 
   try{
-    btn.disabled=true; btn.textContent='Envoi…'; msg.textContent='Transmission…'; msg.className='msg muted';
-    const res=await fetch(CONFIG.webhookScoreUrl,{method:'POST', body:fd}); if(!res.ok) throw 0;
+    btn.disabled=true; btn.textContent='Envoi…';
+    msg.textContent='Transmission…'; msg.className='msg muted';
+
+    const res=await fetch(CONFIG.webhookScoreUrl,{method:'POST', body:fd});
+    if(!res.ok) throw new Error('Webhook non joignable: '+res.status);
+
     msg.textContent='Score envoyé !'; msg.className='msg ok';
     setTimeout(()=>location.href='https://sportingvillette-beep.github.io/form-score-club/#ok',600);
-  }catch{
-    msg.textContent='Erreur d’envoi.'; msg.className='msg err';
+  }catch(err){
+    console.error(err); msg.textContent='Erreur d’envoi.'; msg.className='msg err';
+    // affiche l’erreur si besoin
+    const dbg=document.getElementById('dbg');
+    dbg.style.display='block'; dbg.textContent='JS error: '+(err&&err.message?err.message:err);
   }finally{
     btn.disabled=false; btn.textContent='Envoyer score';
   }
+});
+
+// mini capteur d’erreurs globales (utile en prod)
+window.addEventListener('error', e=>{
+  const dbg=document.getElementById('dbg');
+  dbg.style.display='block';
+  dbg.textContent='JS error: '+e.message+'\n'+(e.filename||'')+':'+(e.lineno||'');
 });
 </script>
 </body>
