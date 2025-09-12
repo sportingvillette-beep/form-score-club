@@ -1,273 +1,130 @@
 <!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ajouter score — Sporting Villette</title>
-  <meta name="color-scheme" content="light dark" />
-  <link rel="stylesheet" href="https://sportingvillette-beep.github.io/form-score-club/assets/styles.css?v=1">
-</head>
-<body>
-  <div class="wrap"><div class="card">
-    <header>
-      <img alt="Logo du club" src="/form-score-club/assets/logo.png" onerror="this.style.display='none'">
-      <div>
-        <div class="club">Ajouter score en direct</div>
-        <div class="hint">Sélectionnez un match (ou retour accueil)</div>
-      </div>
-      <a class="mini" style="margin-left:auto" href="https://sportingvillette-beep.github.io/form-score-club/index.html">Accueil</a>
-    </header>
+<html lang="fr"><head>
+<meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ajouter score — Sporting Villette</title>
+<meta name="color-scheme" content="light dark" />
+<link rel="stylesheet" href="https://sportingvillette-beep.github.io/form-score-club/assets/styles.css?v=2">
+</head><body>
+<div class="wrap"><div class="card">
+  <header>
+    <img alt="Logo du club" src="/form-score-club/assets/logo.png" onerror="this.style.display='none'">
+    <div><div class="club">Ajouter score en direct</div><div class="hint">Match choisi à l’étape précédente</div></div>
+    <a class="mini" style="margin-left:auto" href="https://sportingvillette-beep.github.io/form-score-club/index.html">Accueil</a>
+  </header>
 
-    <div id="selected" class="selected" hidden>
-      <div>
-        <div class="sel-teams" id="selTeams"></div>
-        <div class="muted" id="selMeta"></div>
-      </div>
-      <button type="button" id="changeBtn" class="mini">Changer</button>
+  <!-- plus de sélection/liste ici -->
+  <div class="selected" id="selBox" hidden>
+    <div>
+      <div class="sel-teams" id="selTeams"></div>
+      <div class="muted" id="selMeta"></div>
     </div>
+  </div>
 
-    <section class="matches">
-      <h3>Choisir une rencontre</h3>
-      <div id="matchesMsg" class="muted">Chargement des matchs…</div>
-      <div id="daysContainer"></div>
-    </section>
-
-    <!-- FORM -->
-    <form id="f" novalidate>
-      <label>ID match
-        <input name="match_id" id="match_id" required placeholder="ex: MCH-2025-08-12-001" autocomplete="off">
+  <form id="f" novalidate>
+    <input type="hidden" name="match_id" id="match_id">
+    <label>État du match
+      <select name="etat_match" id="etat_match" required>
+        <option value="termine" selected>Terminé</option>
+        <option value="en_cours">En cours</option>
+      </select>
+      <span class="muted">Si « En cours », indiquez le temps de jeu.</span>
+    </label>
+    <div class="row">
+      <label><span id="label_dom">Score domicile</span>
+        <input type="number" name="score_dom" id="score_dom" inputmode="numeric" min="0" max="200" required>
       </label>
-      <label>État du match
-        <select name="etat_match" id="etat_match" required>
-          <option value="termine" selected>Terminé</option>
-          <option value="en_cours">En cours</option>
-        </select>
-        <span class="muted">Si « En cours », indiquez le temps de jeu.</span>
+      <label><span id="label_ext">Score extérieur</span>
+        <input type="number" name="score_ext" id="score_ext" inputmode="numeric" min="0" max="200" required>
       </label>
-      <div class="row">
-        <label><span id="label_dom">Score domicile</span>
-          <input type="number" name="score_dom" id="score_dom" inputmode="numeric" min="0" max="200" required>
-        </label>
-        <label><span id="label_ext">Score extérieur</span>
-          <input type="number" name="score_ext" id="score_ext" inputmode="numeric" min="0" max="200" required>
-        </label>
-      </div>
-      <div class="row one" id="temps_wrapper" hidden>
-        <label>Temps de jeu (minutes)
-          <input type="number" name="temps_jeu" id="temps_jeu" inputmode="numeric" min="1" max="90" placeholder="ex : 20">
-        </label>
-      </div>
-      <label>Résultat (auto)
-        <select name="statut" id="statut" required style="pointer-events:none;opacity:.95">
-          <option value="" disabled selected>— Calculé automatiquement —</option>
-          <option>En cours</option>
-          <option>Victoire</option>
-          <option>Défaite</option>
-          <option>Match Nul</option>
-          <option>Terminé</option>
-        </select>
+    </div>
+    <div class="row one" id="temps_wrapper" hidden>
+      <label>Temps de jeu (minutes)
+        <input type="number" name="temps_jeu" id="temps_jeu" inputmode="numeric" min="1" max="90" placeholder="ex : 20">
       </label>
-      <div class="dropzone" id="dz">
-        <div class="dz-title">Photo du match (facultatif)</div>
-        <input type="file" name="photo" id="photo" accept="image/*">
-        <div class="muted">Glissez une image, prenez une photo ou choisissez depuis la galerie.</div>
-        <img id="preview" alt="Aperçu photo" />
-      </div>
-      <div class="actions">
-        <button type="submit" id="btn">Envoyer score</button>
-        <div class="msg muted" id="msg" role="status" aria-live="polite"></div>
-      </div>
-    </form>
+    </div>
+    <label>Résultat (auto)
+      <select name="statut" id="statut" required style="pointer-events:none;opacity:.95">
+        <option value="" disabled selected>— Calculé automatiquement —</option>
+        <option>En cours</option><option>Victoire</option><option>Défaite</option><option>Match Nul</option><option>Terminé</option>
+      </select>
+    </label>
+    <div class="dropzone" id="dz"><div class="dz-title">Photo (facultatif)</div>
+      <input type="file" name="photo" id="photo" accept="image/*"><img id="preview" alt="Aperçu photo" />
+    </div>
+    <div class="actions"><button type="submit" id="btn">Envoyer score</button><div class="msg muted" id="msg"></div></div>
+  </form>
 
-    <footer class="muted">Après envoi, retour automatique à l’accueil.</footer>
-  </div></div>
+  <footer class="muted">Après envoi, retour automatique à l’accueil.</footer>
+</div></div>
 
-  <script>
-    // ------- Config & utils -------
-    const CONFIG = {
-      gsheetCsvUrl:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQvskuueB25qKj0hbDWjFPomFdhfWRduUsNLp6Kv-za4t4oXcbbLsLrNsjwIt0ZH7C9B75pYBGDJfQu/pub?gid=0&single=true&output=csv',
-      webhookScoreUrl:'https://hook.eu2.make.com/12s2f2licqusjj1xiw3p3tulrfnd5dgw',
-      webhookPhotoUrl:'https://hook.eu2.make.com/40xiygzru2pfcgwooofj7ewouwqqddsi',
-      clubAliases:['Sporting Villette','Villette Genas','Entente Villette Genas','Est Lyonnais','Lyon Est Handball'],
-      fields:{match_id:'Code Gesthand',date:'Date',heure:'Heure',categorie:'Catégorie',genre:'Genre',championnat:'Championnat',equipe1:'Eq1',equipe1x:'Eq1X',equipe2:'Eq2',equipe2x:'Eq2X',eq1score:'Eq1Score',eq2score:'Eq2Score',winlose:'WinLose',gymnase:'Gymnase',ville:'Ville',photo:'PhotoEq'},
-      dateWindow:{pastDays:2,futureDays:5}, maxSizeMB:10
-    };
-    const U = {
-      norm:s=> (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),
-      parseDateFR:v=>{if(!v)return null;const m=String(v).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(m){const d=m[1].padStart(2,'0'),mo=m[2].padStart(2,'0'),y=m[3];return new Date(`${y}-${mo}-${d}T00:00:00`);}const d=new Date(v);return isNaN(d)?null:d;},
-      parseDateTimeFR:(ds,ts)=>{const d=U.parseDateFR(ds);if(!d)return null;const[h='00',m='00']=String(ts||'00:00').split(':');const dt=new Date(d);dt.setHours(+h||0,+m||0,0,0);return dt;},
-      fmtDate:d=> d?d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long'}):'',
-      fmtTime:d=> d?d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'',
-    };
-    const F=CONFIG.fields; const L=Object.fromEntries(Object.entries(F).map(([k,v])=>[k,(v||'').toLowerCase()]));
-    function csvToRows(csv){const rows=[];let cur=[],i=0,f='',q=false;while(i<csv.length){const c=csv[i++];if(c==='"'){if(q&&csv[i]==='"'){f+='"';i++;}else q=!q;}else if(c===','&&!q){cur.push(f);f='';}else if((c==='\n'||c==='\r')&&!q){if(f!==''||cur.length){cur.push(f);rows.push(cur);cur=[];f='';}}else f+=c;}if(f!==''||cur.length){cur.push(f);rows.push(cur);}return rows.filter(r=>r.length&&r.join('').trim()!=='');}
-    function saveSelection(m){ sessionStorage.setItem('selectedMatch', JSON.stringify(m)); }
-    function getSelection(){ try{ return JSON.parse(sessionStorage.getItem('selectedMatch')||'null'); }catch{return null;} }
-    function isFinished(winlose){ if(!winlose) return false; return /(victoire|defaite|défaite|match\\s*nul|termine|terminé)/i.test(String(winlose)); }
+<script>
+const CONFIG = {
+  webhookScoreUrl:'https://hook.eu2.make.com/12s2f2licqusjj1xiw3p3tulrfnd5dgw',
+  clubAliases:['Sporting Villette','Villette Genas','Entente Villette Genas','Est Lyonnais','Lyon Est Handball'],
+  maxSizeMB:10
+};
+const U={fmtDate:d=>d?d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long'}):'',fmtTime:d=>d?d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):''};
+function getSelection(){ try{ return JSON.parse(sessionStorage.getItem('selectedMatch')||'null'); }catch{return null;} }
+function isFinished(w){return /(victoire|defaite|défaite|match\s*nul|termine|terminé)/i.test(String(w||''));}
 
-    async function loadMatches(){
-      const msg=document.getElementById('matchesMsg');
-      try{
-        const res=await fetch(CONFIG.gsheetCsvUrl,{cache:'no-store'}); if(!res.ok) throw 0;
-        const csv=await res.text(), rows=csvToRows(csv);
-        const headers=rows.shift().map(h=>h.trim()); const idx=Object.fromEntries(headers.map((h,i)=>[h.toLowerCase(),i]));
-        const items=rows.map(r=>{
-          const d=r[idx[L.date]], h=r[idx[L.heure]], dt=U.parseDateTimeFR(d,h);
-          const e1=(r[idx[L.equipe1]]||'').trim(), e1x=(r[idx[L.equipe1x]]||'').trim();
-          const e2=(r[idx[L.equipe2]]||'').trim(), e2x=(r[idx[L.equipe2x]]||'').trim();
-          const photo=(r[idx[L.photo]]||'').trim();
-          return { match_id:r[idx[L.match_id]], date_str:d, heure_str:h, _date:dt,
-                   categorie:r[idx[L.categorie]], genre:r[idx[L.genre]]||'', championnat:r[idx[L.championnat]],
-                   equipe1:(e1+(e1x?` ${e1x}`:'' )).trim(), equipe2:(e2+(e2x?` ${e2x}`:'' )).trim(),
-                   eq1score:r[idx[L.eq1score]], eq2score:r[idx[L.eq2score]], winlose:r[idx[L.winlose]],
-                   gymnase:r[idx[L.gymnase]], ville:r[idx[L.ville]], photo:(/^https?:\/\//.test(photo)?photo:'') };
-        }).filter(x=>x&&x.match_id&&x._date);
-        // fenêtre J-2 → J+5
-        const base=new Date(); base.setHours(0,0,0,0);
-        const start=new Date(base); start.setDate(start.getDate()-(CONFIG.dateWindow.pastDays||2));
-        const end=new Date(base); end.setDate(end.getDate()+(CONFIG.dateWindow.futureDays||5));
-        const filtered=items.filter(x=>x._date>=start && x._date<=end).sort((a,b)=>a._date-b._date);
-        renderList(filtered);
-        msg.textContent='';
-      }catch{ msg.textContent="Impossible de charger la liste des matchs."; }
-    }
+function requireSelection(){
+  const sel=getSelection();
+  if(!sel){ location.href='https://sportingvillette-beep.github.io/form-score-club/index.html?selectfirst=1'; return null; }
+  return sel;
+}
 
-    function renderList(matches){
-      const container=document.getElementById('daysContainer'); container.innerHTML='';
-      const byDay={};
-      for(const m of matches){
-        const k=new Date(m._date.getFullYear(),m._date.getMonth(),m._date.getDate()).toISOString();
-        (byDay[k] ||= []).push(m);
-      }
-      const keys=Object.keys(byDay).sort((a,b)=> new Date(a)-new Date(b));
-      for(const k of keys){
-        const d=new Date(k);
-        const sec=document.createElement('div'); sec.className='day-section';
-        sec.innerHTML=`<div class="day-head"><div class="day-title">${U.fmtDate(d)}</div><div class="day-sub">${byDay[k].length} match${byDay[k].length>1?'s':''}</div></div>`;
-        const list=document.createElement('div'); list.className='list';
-        byDay[k].forEach(m=>{
-          const s1=(m.eq1score!==''&&m.eq1score!=null)?Number(m.eq1score):null;
-          const s2=(m.eq2score!==''&&m.eq2score!=null)?Number(m.eq2score):null;
-          const btn=document.createElement('button'); btn.type='button'; btn.className='match-card';
-          btn.innerHTML=`
-            <div class="time-col">
-              <div class="time-box">${U.fmtTime(m._date)}</div>
-              <div class="code-chip">${m.match_id}</div>
-            </div>
-            <div class="teams">
-              <div class="team-row"><div class="team-name">${m.equipe1}</div><div class="team-score">${s1??''}</div></div>
-              <div class="team-row"><div class="team-name">${m.equipe2}</div><div class="team-score">${s2??''}</div></div>
-              <div class="meta-line">${(m.categorie||m.genre||m.championnat)?`<span class="meta-cat">${[m.categorie,m.genre,m.championnat].filter(Boolean).join(' ')}</span>`:''}</div>
-              <div class="meta-line">${(m.ville||m.gymnase)?`<span class="meta-place">${[m.ville,m.gymnase].filter(Boolean).join(' · ')}</span>`:''}</div>
-            </div>
-            <div class="right"></div>`;
-          btn.addEventListener('click',()=> onPick(m));
-          list.appendChild(btn);
-        });
-        sec.appendChild(list); container.appendChild(sec);
-      }
-    }
+(function init(){
+  const sel=requireSelection(); if(!sel) return;
+  document.getElementById('selTeams').textContent=`${sel.equipe1} vs ${sel.equipe2}`;
+  document.getElementById('selMeta').textContent=[U.fmtDate(new Date(sel._date)),U.fmtTime(new Date(sel._date)),sel.categorie,sel.championnat,sel.ville].filter(Boolean).join(' · ');
+  document.getElementById('selBox').hidden=false;
 
-    function onPick(m){
-      saveSelection(m);
-      document.getElementById('selTeams').textContent=`${m.equipe1} vs ${m.equipe2}`;
-      document.getElementById('selMeta').textContent=[U.fmtDate(m._date),U.fmtTime(m._date),m.categorie,m.championnat,m.ville].filter(Boolean).join(' · ');
-      document.getElementById('selected').hidden=false;
+  document.getElementById('match_id').value=sel.match_id;
+  document.getElementById('label_dom').textContent='Score '+sel.equipe1;
+  document.getElementById('label_ext').textContent='Score '+sel.equipe2;
+  document.getElementById('etat_match').value=isFinished(sel.winlose)?'termine':'en_cours';
+  toggleTempsByEtat();
+})();
 
-      // Préremplir le formulaire
-      document.getElementById('match_id').value=m.match_id;
-      document.getElementById('label_dom').textContent='Score ' + m.equipe1;
-      document.getElementById('label_ext').textContent='Score ' + m.equipe2;
-      document.getElementById('etat_match').value = isFinished(m.winlose)?'termine':'en_cours';
-      toggleTempsByEtat();
-    }
+const etatEl=etat_match, tempsWrap=temps_wrapper, tempsEl=temps_jeu, sdEl=score_dom, seEl=score_ext, statutEl=statut;
+function computeResult(){
+  if(etatEl.value==='en_cours'){ statutEl.value='En cours'; return; }
+  const s1=parseInt(sdEl.value,10), s2=parseInt(seEl.value,10);
+  if(Number.isNaN(s1)||Number.isNaN(s2)){ statutEl.value=''; return; }
+  if(s1===s2){ statutEl.value='Match Nul'; return; }
+  const CL=['sporting villette','villette genas','entente villette genas','est lyonnais','lyon est handball'];
+  const eq1=(label_dom.textContent||'').replace(/^Score\s+/,'').toLowerCase();
+  const eq2=(label_ext.textContent||'').replace(/^Score\s+/,'').toLowerCase();
+  const isClub1=CL.some(a=>eq1.includes(a)), isClub2=CL.some(a=>eq2.includes(a));
+  statutEl.value = s1>s2 ? (isClub1?'Victoire':isClub2?'Défaite':'Terminé')
+                         : (isClub2?'Victoire':isClub1?'Défaite':'Terminé');
+}
+function toggleTempsByEtat(){ const enCours=etatEl.value==='en_cours'; tempsWrap.hidden=!enCours; if(!enCours) tempsEl.value=''; computeResult(); }
+etatEl.addEventListener('change',toggleTempsByEtat); sdEl.addEventListener('input',computeResult); seEl.addEventListener('input',computeResult);
+tempsEl.addEventListener('input',()=>{ if((tempsEl.value||'').trim()!==''){ etatEl.value='en_cours'; toggleTempsByEtat(); }});
 
-    // ---- Form logic ----
-    const etatEl=document.getElementById('etat_match');
-    const tempsWrap=document.getElementById('temps_wrapper');
-    const tempsEl=document.getElementById('temps_jeu');
-    const sdEl=document.getElementById('score_dom');
-    const seEl=document.getElementById('score_ext');
-    const statutEl=document.getElementById('statut');
+// dropzone
+const dz=dz, file=photo, prev=preview;
+['dragenter','dragover'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.add('drag')}));
+['dragleave','drop'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('drag')}));
+dz.addEventListener('drop',e=>{ if(e.dataTransfer.files?.length){ file.files=e.dataTransfer.files; file.dispatchEvent(new Event('change')); } });
+photo.addEventListener('change',()=>{ const f=photo.files[0]; if(!f){ prev.style.display='none'; prev.src=''; return; } prev.src=URL.createObjectURL(f); prev.style.display='block'; });
 
-    function computeResult(){
-      const etat=etatEl.value;
-      if(etat==='en_cours'){ statutEl.value='En cours'; return; }
-      const s1=parseInt(sdEl.value,10), s2=parseInt(seEl.value,10);
-      if(Number.isNaN(s1)||Number.isNaN(s2)){ statutEl.value=''; return; }
-      if(s1===s2){ statutEl.value='Match Nul'; return; }
-      const CLUBS=(CONFIG.clubAliases||[]).map(U.norm);
-      const eq1=(document.getElementById('label_dom').textContent||'').replace(/^Score\\s+/,'');
-      const eq2=(document.getElementById('label_ext').textContent||'').replace(/^Score\\s+/,'');
-      const isClub1=CLUBS.some(a=>U.norm(eq1).includes(a));
-      const isClub2=CLUBS.some(a=>U.norm(eq2).includes(a));
-      if(s1>s2){ statutEl.value = isClub1? 'Victoire' : isClub2? 'Défaite':'Terminé'; }
-      else     { statutEl.value = isClub2? 'Victoire' : isClub1? 'Défaite':'Terminé'; }
-    }
-    function toggleTempsByEtat(){ const enCours=etatEl.value==='en_cours'; tempsWrap.hidden=!enCours; if(!enCours) tempsEl.value=''; computeResult(); }
-    etatEl.addEventListener('change', toggleTempsByEtat);
-    sdEl.addEventListener('input', computeResult);
-    seEl.addEventListener('input', computeResult);
-    tempsEl.addEventListener('input',()=>{ if(String(tempsEl.value).trim()!==''){ etatEl.value='en_cours'; toggleTempsByEtat(); }});
-
-    // dropzone
-    const dz=document.getElementById('dz'), file=document.getElementById('photo'), prev=document.getElementById('preview');
-    ['dragenter','dragover'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.add('drag')}));
-    ['dragleave','drop'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('drag')}));
-    dz.addEventListener('drop',e=>{ if(e.dataTransfer.files?.length){ file.files=e.dataTransfer.files; file.dispatchEvent(new Event('change')); } });
-    file.addEventListener('change',()=>{ const f=file.files[0]; if(!f){ prev.style.display='none'; prev.src=''; return; } prev.src=URL.createObjectURL(f); prev.style.display='block'; });
-
-    // submit
-    document.getElementById('f').addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const msg=document.getElementById('msg'); const btn=document.getElementById('btn');
-      const id=document.getElementById('match_id').value.trim();
-      if(!id){ msg.textContent='Renseignez l’ID du match.'; msg.className='msg err'; return; }
-      const s1=document.getElementById('score_dom').value, s2=document.getElementById('score_ext').value;
-      if(s1===''||s2===''){ msg.textContent='Renseignez les scores.'; msg.className='msg err'; return; }
-      const f=file.files[0]; if (f && f.size > CONFIG.maxSizeMB*1024*1024){ msg.textContent=`Fichier trop lourd (max ${CONFIG.maxSizeMB} Mo).`; msg.className='msg err'; return; }
-
-      const fd=new FormData(e.target);
-      // WinLose auto
-      if(etatEl.value==='en_cours'){
-        const t=document.getElementById('temps_jeu').value.trim();
-        if(!t){ msg.textContent='Indiquez le temps de jeu (minutes).'; msg.className='msg err'; return; }
-        fd.set('WinLose', `${parseInt(t,10)}e`);
-      } else {
-        computeResult(); fd.set('WinLose', document.getElementById('statut').value||'Terminé');
-      }
-      // labels (si sélection faite)
-      const sel=getSelection();
-      if(sel){
-        fd.append('equipe1_label', sel.equipe1||'');
-        fd.append('equipe2_label', sel.equipe2||'');
-      }
-
-      try{
-        btn.disabled=true; btn.textContent='Envoi…'; msg.textContent='Transmission sécurisée…'; msg.className='msg muted';
-        const res=await fetch(CONFIG.webhookScoreUrl,{method:'POST', body:fd});
-        if(!res.ok) throw 0;
-        msg.textContent='Merci, score envoyé !'; msg.className='msg ok';
-        setTimeout(()=>{ location.href='https://sportingvillette-beep.github.io/form-score-club/index.html#ok'; }, 600);
-      }catch{
-        msg.textContent='Erreur d’envoi. Réessayez.'; msg.className='msg err';
-      }finally{
-        btn.disabled=false; btn.textContent='Envoyer score';
-      }
-    });
-
-    // selection bar handlers
-    document.getElementById('changeBtn').addEventListener('click',()=>{
-      sessionStorage.removeItem('selectedMatch');
-      document.getElementById('selected').hidden=true;
-    });
-
-    // init
-    (function init(){
-      const sel=getSelection();
-      if(sel){ onPick(sel); }
-      loadMatches();
-    })();
-  </script>
-</body>
-</html>
+f.addEventListener('submit', async (e)=>{
+  e.preventDefault(); const msg=msg, btn=btn;
+  const id=match_id.value.trim(); if(!id){ msg.textContent='ID manquant.'; msg.className='msg err'; return; }
+  if(score_dom.value===''||score_ext.value===''){ msg.textContent='Renseignez les scores.'; msg.className='msg err'; return; }
+  const f=photo.files[0]; if(f && f.size>CONFIG.maxSizeMB*1024*1024){ msg.textContent=`Fichier trop lourd (max ${CONFIG.maxSizeMB} Mo).`; msg.className='msg err'; return; }
+  const fd=new FormData(e.target);
+  if(etatEl.value==='en_cours'){ const t=(temps_jeu.value||'').trim(); if(!t){ msg.textContent='Indiquez le temps de jeu.'; msg.className='msg err'; return; } fd.set('WinLose', `${parseInt(t,10)}e`); }
+  else { computeResult(); fd.set('WinLose', statut.value||'Terminé'); }
+  const sel=getSelection(); if(sel){ fd.append('equipe1_label', sel.equipe1||''); fd.append('equipe2_label', sel.equipe2||''); }
+  try{ btn.disabled=true; btn.textContent='Envoi…'; msg.textContent='Transmission…'; msg.className='msg muted';
+       const res=await fetch(CONFIG.webhookScoreUrl,{method:'POST',body:fd}); if(!res.ok) throw 0;
+       msg.textContent='Score envoyé !'; msg.className='msg ok';
+       setTimeout(()=>location.href='https://sportingvillette-beep.github.io/form-score-club/index.html#ok',600);
+  }catch{ msg.textContent='Erreur d’envoi.'; msg.className='msg err'; }
+  finally{ btn.disabled=false; btn.textContent='Envoyer score'; }
+});
+</script>
+</body></html>
