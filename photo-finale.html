@@ -62,7 +62,8 @@
 
 
 <script type="module">
-import {attachSelectionUI, wireFinalPhotoForm, wireDropzone} from './assets/forms.js';
+  // Chemin ABSOLU vers forms.js
+  import {attachSelectionUI, getSelection} from '/form-score-club/assets/forms.js';
 attachSelectionUI();
 wireFinalPhotoForm();
 wireDropzone('photo2','preview2','dz2');
