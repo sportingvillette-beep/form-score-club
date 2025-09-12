@@ -1,0 +1,72 @@
+<!doctype html>
+</div>
+
+
+<section class="matches">
+<h3>Choisir une rencontre</h3>
+<div id="matchesMsg" class="muted">Chargement des matchs…</div>
+<div id="daysContainer"></div>
+</section>
+
+
+<!-- FORMULAIRE SCORE -->
+<form id="f" novalidate>
+<label id="idLine">ID match
+<input name="match_id" id="match_id" required placeholder="ex: MCH-2025-08-12-001" autocomplete="off">
+</label>
+<label>État du match
+<select name="etat_match" id="etat_match" required>
+<option value="termine" selected>Terminé</option>
+<option value="en_cours">En cours</option>
+</select>
+<span class="muted">Si « En cours », indiquez le temps de jeu.</span>
+</label>
+<div class="row">
+<label><span id="label_dom">Score domicile</span>
+<input type="number" name="score_dom" id="score_dom" inputmode="numeric" min="0" max="200" required>
+</label>
+<label><span id="label_ext">Score extérieur</span>
+<input type="number" name="score_ext" id="score_ext" inputmode="numeric" min="0" max="200" required>
+</label>
+</div>
+<div class="row one" id="temps_wrapper" hidden>
+<label>Temps de jeu (minutes)
+<input type="number" name="temps_jeu" id="temps_jeu" inputmode="numeric" min="1" max="90" placeholder="ex : 20">
+</label>
+</div>
+<label>Résultat (auto)
+<select name="statut" id="statut" required style="pointer-events:none;opacity:.95">
+<option value="" disabled selected>— Calculé automatiquement —</option>
+<option>En cours</option>
+<option>Victoire</option>
+<option>Défaite</option>
+<option>Match Nul</option>
+<option>Terminé</option>
+</select>
+</label>
+<div class="dropzone" id="dz">
+<div class="dz-title">Photo du match (facultatif)</div>
+<input type="file" name="photo" id="photo" accept="image/*">
+<div class="muted">Glissez une image, prenez une photo ou choisissez depuis la galerie.</div>
+<img id="preview" alt="Aperçu photo" />
+</div>
+<input type="hidden" name="form_secret" id="form_secret" value="CHANGE-MOI">
+<div class="actions">
+<button type="submit" id="btn">Envoyer score</button>
+<div class="msg muted" id="msg" role="status" aria-live="polite"></div>
+</div>
+</form>
+
+
+<footer class="muted">Après envoi, retour automatique à l’accueil.</footer>
+</div></div>
+
+
+<script type="module">
+import {attachSelectionUI, wireLiveScoreForm, wireDropzone} from './assets/forms.js';
+attachSelectionUI();
+wireLiveScoreForm();
+wireDropzone('photo','preview','dz');
+</script>
+</body>
+</html>
