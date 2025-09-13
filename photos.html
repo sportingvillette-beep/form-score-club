@@ -53,7 +53,7 @@
 </div></div>
 
 <script>
-const CONFIG={ webhookPhotoUrl:'https://hook.eu2.make.com/40xiygzru2pfcgwooofj7ewouwqqddsi', maxSizeMB:10 };
+const CONFIG={ webhookPhotoUrl:'https://hook.eu2.make.com/6eleo3ebtez77n61evvifcy0s9xm1hix', maxSizeMB:10 };
 const U={d:d=>new Date(d), fmtDate:d=>U.d(d).toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long'}), fmtTime:d=>U.d(d).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})};
 function getSelection(){ try{ return JSON.parse(sessionStorage.getItem('selectedMatch')||'null'); }catch{return null;} }
 function requireSelection(){ const sel=getSelection(); if(!sel){ location.href='https://sportingvillette-beep.github.io/form-score-club/?selectfirst=1'; return null;} return sel;}
