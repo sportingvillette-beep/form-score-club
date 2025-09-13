@@ -48,6 +48,14 @@
       .chip-time{background:#0f1e33;border-color:#1d3050;color:#9fc3ff}
       .chip-wait{background:#141a23;color:#9aa6b2}
     }
+
+    /* Miniature + lightbox */
+    .thumb-wrap{display:block;margin-top:6px}
+    .thumb-btn{border:0;background:none;padding:0;cursor:zoom-in}
+    .thumb{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+    .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center}
+    .lightbox.open{display:flex}
+    .lightbox img{max-width:92vw;max-height:92vh;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
   </style>
 </head>
 <body>
@@ -90,6 +98,11 @@
 
       <footer class="muted">Retour depuis les formulaires → cette page, avec sélection conservée.</footer>
     </div>
+  </div>
+
+  <!-- Lightbox (zoom) -->
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Agrandissement photo">
+    <img id="lightboxImg" alt="">
   </div>
 
   <script>
@@ -238,6 +251,14 @@
 
           const btn=document.createElement('button'); btn.type='button'; btn.className='match-card';
           const chips = rightChipsForMatch(m);
+          const thumb = m.photo ? `
+            <span class="thumb-wrap">
+              <button class="thumb-btn" aria-label="Agrandir la photo"
+                      onclick="event.stopPropagation();openLightbox('${m.photo.replace(/'/g,'&#39;')}')">
+                <img class="thumb" src="${m.photo}" alt="Photo du match">
+              </button>
+            </span>` : '';
+
           btn.innerHTML=`
             <div class="time-col">
               <div class="time-box">${U.fmtTime(m._date)}</div>
@@ -249,13 +270,30 @@
               <div class="meta-line">${(m.categorie||m.genre||m.championnat)?`<span class="meta-cat">${[m.categorie,m.genre,m.championnat].filter(Boolean).join(' ')}</span>`:''}</div>
               <div class="meta-line">${(m.ville||m.gymnase)?`<span class="meta-place">${[m.ville,m.gymnase].filter(Boolean).join(' · ')}</span>`:''}</div>
             </div>
-            <div class="right">${chips}</div>`;
+            <div class="right">
+              ${chips}
+              ${thumb}
+            </div>`;
           btn.addEventListener('click',()=> onPick(m));
           list.appendChild(btn);
         });
         sec.appendChild(list); container.appendChild(sec);
       }
     }
+
+    // --- Lightbox ---
+    function openLightbox(src){ 
+      lightboxImg.src=src; 
+      lightbox.classList.add('open'); 
+    }
+    function closeLightbox(){ 
+      lightbox.classList.remove('open'); 
+      lightboxImg.src=''; 
+    }
+    lightbox.addEventListener('click', closeLightbox);
+    window.addEventListener('keydown', e=>{ if(e.key==='Escape') closeLightbox(); });
+    // expo pour onclick inline
+    window.openLightbox = openLightbox;
 
     // --- Sélection + boutons ---
     function onPick(m){
