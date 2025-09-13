@@ -17,6 +17,7 @@
     .selected{display:flex;gap:10px;margin:10px 0 14px;padding:12px 14px;border:1px dashed var(--border);border-radius:14px;background:#fff}
     .sel-teams{font-weight:900}.muted{opacity:.7;font-size:12px}
     .dropzone{border:2px dashed var(--border);border-radius:14px;padding:14px;text-align:center;background:#fff;margin-top:6px}
+    .dropzone.drag{border-color:var(--brand);background:#fff5f5}
     #preview2{max-width:100%;max-height:220px;border-radius:12px;display:none;margin-top:8px;border:1px solid var(--border)}
     .actions{display:grid;gap:8px;margin-top:10px}
     .msg{min-height:20px}
@@ -30,6 +31,7 @@
     <a class="mini" style="margin-left:auto" href="https://sportingvillette-beep.github.io/form-score-club/">Accueil</a>
   </header>
 
+  <!-- Rappel sélection -->
   <div class="selected" id="selBox" hidden>
     <div>
       <div class="sel-teams" id="selTeams"></div>
@@ -38,14 +40,15 @@
   </div>
   <p id="infoFinale" class="muted"></p>
 
-  <form id="f">
+  <!-- Formulaire -->
+  <form id="fPhoto" method="post" action="#" enctype="multipart/form-data" novalidate>
     <div class="dropzone" id="dz2">
       <div class="dz-title">Image</div>
-      <input type="file" name="" id="2" accept="image/*">
-      <img id="preview2" alt="Aperçu " />
+      <input type="file" name="photo_finale" id="photo2" accept="image/*">
+      <img id="preview2" alt="Aperçu" />
     </div>
     <div class="actions">
-      <button type="submit" id="btn2" class="mini">Envoyer </button>
+      <button type="submit" id="btn2" class="mini">Envoyer photo</button>
       <div class="msg muted" id="msg2"></div>
     </div>
   </form>
@@ -54,42 +57,73 @@
 </div></div>
 
 <script>
-const CONFIG={ webhookUrl:'https://hook.eu2.make.com/12s2f2licqusjj1xiw3p3tulrfnd5dgw', maxSizeMB:10 };
-const U={d:d=>new Date(d), fmtDate:d=>U.d(d).toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long'}), fmtTime:d=>U.d(d).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})};
+const CONFIG={ 
+  // même URL que celle qui marche dans le minisite 1-page
+  webhookPhotoUrl:'https://hook.eu2.make.com/12s2f2licqusjj1xiw3p3tulrfnd5dgw',
+  maxSizeMB:10 
+};
+const U={
+  d:d=>new Date(d),
+  fmtDate:d=>U.d(d).toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long'}),
+  fmtTime:d=>U.d(d).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})
+};
 function getSelection(){ try{ return JSON.parse(sessionStorage.getItem('selectedMatch')||'null'); }catch{return null;} }
 function isFinished(w){return /(victoire|defaite|défaite|match\s*nul|termine|terminé)/i.test(String(w||''));}
 function requireSelection(){ const sel=getSelection(); if(!sel){ location.href='https://sportingvillette-beep.github.io/form-score-club/?selectfirst=1'; return null;} return sel;}
 
 (function init(){
   const sel=requireSelection(); if(!sel) return;
-  selTeams.textContent=`${sel.equipe1} vs ${sel.equipe2}`;
-  selMeta.textContent=[U.fmtDate(sel._date),U.fmtTime(sel._date),sel.categorie,sel.championnat,sel.ville].filter(Boolean).join(' · ');
-  selBox.hidden=false;
-  infoFinale.textContent = isFinished(sel.winlose)? 'Match terminé ✅ — vous pouvez ajouter une  finale.' : '⚠️ Réservé aux matchs terminés.';
+  document.getElementById('selTeams').textContent=`${sel.equipe1} vs ${sel.equipe2}`;
+  document.getElementById('selMeta').textContent=[U.fmtDate(sel._date),U.fmtTime(sel._date),sel.categorie,sel.championnat,sel.ville].filter(Boolean).join(' · ');
+  document.getElementById('selBox').hidden=false;
+  document.getElementById('infoFinale').textContent = isFinished(sel.winlose)
+    ? 'Match terminé ✅ — vous pouvez ajouter une photo finale.'
+    : '⚠️ Réservé aux matchs terminés.';
 })();
 
-// dropzone + submit
-['dragenter','dragover'].forEach(evt=>dz2.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz2.classList.add('drag')}));
-['dragleave','drop'].forEach(evt=>dz2.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz2.classList.remove('drag')}));
-dz2.addEventListener('drop',e=>{ if(e.dataTransfer.files?.length){ 2.files=e.dataTransfer.files; 2.dispatchEvent(new Event('change')); } });
-photo2.addEventListener('change',()=>{ const f=photo2.files[0]; if(!f){ preview2.style.display='none'; preview2.src=''; return; } preview2.src=URL.createObjectURL(f); preview2.style.display='block'; });
+// Drag&drop + preview
+(function wireDrop(){
+  const dz=document.getElementById('dz2'), file=document.getElementById('photo2'), prev=document.getElementById('preview2');
+  ['dragenter','dragover'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.add('drag')}));
+  ['dragleave','drop'].forEach(evt=>dz.addEventListener(evt,e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('drag')}));
+  dz.addEventListener('drop',e=>{ if(e.dataTransfer.files?.length){ file.files=e.dataTransfer.files; file.dispatchEvent(new Event('change')); } });
+  file.addEventListener('change',()=>{ const f=file.files[0]; if(!f){ prev.style.display='none'; prev.src=''; return; } prev.src=URL.createObjectURL(f); prev.style.display='block'; });
+})();
 
-fPhoto.addEventListener('submit', async (e)=>{
+// Envoi
+document.getElementById('fPhoto').addEventListener('submit', async (e)=>{
   e.preventDefault();
-  const sel=getSelection(); const f=photo2.files[0];
-  if(!f){ msg2.textContent='Choisissez une photo.'; msg2.className='msg err'; return; }
-  if (f && f.size>CONFIG.maxSizeMB*1024*1024){ msg2.textContent=`Fichier trop lourd (max ${CONFIG.maxSizeMB} Mo).`; msg2.className='msg err'; return; }
+  const sel = getSelection();
+  const input = document.getElementById('photo2');
+  const file  = input.files[0];
+  const msg   = document.getElementById('msg2');
+  const btn   = document.getElementById('btn2');
+
+  if(!file){ msg.textContent='Choisissez une photo.'; msg.className='msg err'; return; }
+  if(file.size > CONFIG.maxSizeMB*1024*1024){ msg.textContent=`Fichier trop lourd (max ${CONFIG.maxSizeMB} Mo).`; msg.className='msg err'; return; }
+
   const fd=new FormData();
-  fd.append('match_id', sel?.match_id||''); fd.append('equipe1_label', sel?.equipe1||''); fd.append('equipe2_label', sel?.equipe2||'');
+  fd.append('match_id', sel?.match_id||'');
+  fd.append('equipe1_label', sel?.equipe1||'');
+  fd.append('equipe2_label', sel?.equipe2||'');
   fd.append('meta', [U.fmtDate(sel?._date), U.fmtTime(sel?._date), sel?.categorie, sel?.ville].filter(Boolean).join(' · '));
-  fd.append('photo_finale', f);
+  fd.append('photo_finale', file); // <- même clé que dans la version 1-page qui fonctionnait
+
   try{
-    btn2.disabled=true; btn2.textContent='Envoi…'; msg2.textContent='Transmission…'; msg2.className='msg muted';
-    const res=await fetch(CONFIG.webhookPhotoUrl,{method:'POST', body:fd}); if(!res.ok) throw 0;
-    msg2.textContent='Photo envoyée pour archivage !'; msg2.className='msg ok';
-    setTimeout(()=>location.href='https://sportingvillette-beep.github.io/form-score-club/#ok',600);
-  }catch{ msg2.textContent='Erreur d’envoi.'; msg2.className='msg err'; }
-  finally{ btn2.disabled=false; btn2.textContent='Envoyer photo'; }
+    btn.disabled=true; btn.textContent='Envoi…';
+    msg.textContent='Transmission…'; msg.className='msg muted';
+
+    const res=await fetch(CONFIG.webhookPhotoUrl,{method:'POST', body:fd});
+    if(!res.ok) throw new Error('Webhook non joignable ('+res.status+')');
+
+    msg.textContent='Photo envoyée pour archivage !'; msg.className='msg ok';
+    setTimeout(()=>location.href='https://sportingvillette-beep.github.io/form-score-club/#ok',700);
+  }catch(err){
+    console.error(err);
+    msg.textContent='Erreur d’envoi.'; msg.className='msg err';
+  }finally{
+    btn.disabled=false; btn.textContent='Envoyer photo';
+  }
 });
 </script>
 </body>
