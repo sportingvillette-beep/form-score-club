@@ -48,18 +48,26 @@ byDay[k].forEach(m=>{
 const s1=(m.eq1score!==''&&m.eq1score!=null)?Number(m.eq1score):null;
 const s2=(m.eq2score!==''&&m.eq2score!=null)?Number(m.eq2score):null;
 const btn=document.createElement('button'); btn.type='button'; btn.className='match-card';
+
+const btn=document.createElement('button'); btn.type='button'; btn.className='match-card';
 btn.innerHTML=`
 <div class="time-col">
-<div class="time-box">${U.fmtTime(m._date)}</div>
-<div class="code-chip">${m.match_id}</div>
+  <div class="time-box">${U.fmtTime(m._date)}</div>
+  <div class="code-chip">${m.match_id}</div>
 </div>
 <div class="teams">
-<div class="team-row"><div class="team-name">${m.equipe1}</div><div class="team-score">${s1??''}</div></div>
-<div class="team-row"><div class="team-name">${m.equipe2}</div><div class="team-score">${s2??''}</div></div>
-<div class="meta-line">${(m.categorie||m.genre||m.championnat)?`<span class="meta-cat">${[m.categorie,m.genre,m.championnat].filter(Boolean).join(' ')}</span>`:''}</div>
-<div class="meta-line">${(m.ville||m.gymnase)?`<span class="meta-place">${[m.ville,m.gymnase].filter(Boolean).join(' · ')}</span>`:''}</div>
+  ${(m.categorie||m.genre||m.championnat)?`<div class="cat">
+    <div class="cat-main">${m.categorie || m.genre || ''}</div>
+    <div class="cat-sub">${m.championnat || ''}</div>
+  </div>`:''}
+  <div class="team-row"><div class="team-name">${m.equipe1}</div><div class="team-score">${s1??''}</div></div>
+  <div class="team-row"><div class="team-name">${m.equipe2}</div><div class="team-score">${s2??''}</div></div>
+  <div class="meta-line">${(m.ville||m.gymnase)?`<span class="meta-loc">${[m.ville,m.gymnase].filter(Boolean).join(' · ')}</span>`:''}</div>
 </div>
-<div class="right">${m.photo?`<span class="thumb-wrap"><img class="thumb" src="${m.photo}" alt="Photo du match"></span>`:''}</div>`;
+<div class="right">
+  ${m.photo?`<span class="thumb-wrap"><img class="thumb" src="${m.photo}" alt="Photo du match"></span>`:''}
+  ${m.winlose?`<span class="pill">${m.winlose}</span>`:''}
+</div>`;
 btn.addEventListener('click',()=> onPick(m));
 list.appendChild(btn);
 });

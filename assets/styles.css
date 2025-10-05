@@ -76,3 +76,37 @@ footer{margin-top:12px;text-align:center}
 .toolbar{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}
 .toolbar .row{grid-template-columns:1fr 1fr 1fr}
 .toolbar a{display:flex;align-items:center;justify-content:center;text-decoration:none}
+
+
+
+/* ===== Compact match card + better mobile readability ===== */
+.list{gap:6px}
+.match-card{grid-template-columns:72px 1fr auto; padding:10px 12px; border-radius:12px; align-items:center; gap:12px}
+.time-box{min-width:56px; padding:8px 10px; border-radius:12px; font-size:14px}
+.time-col{gap:6px}
+.code-chip{font-size:10px; padding:4px 8px}
+
+.teams{gap:4px}
+.cat{line-height:1; margin-bottom:2px}
+.cat-main{font-weight:900; font-size:18px; color:var(--accent)}
+.cat-sub{font-weight:700; font-size:12px; color:var(--muted); margin-top:2px}
+
+.team-row{gap:6px}
+.team-name{font-size:16px}
+.team-score{font-size:16px; min-width:36px}
+
+.meta-line{margin-top:2px; font-size:12px; color:var(--muted)}
+
+.right{gap:6px}
+.thumb-wrap{width:52px; height:52px}
+.thumb{width:52px; height:52px; border-radius:8px; object-fit:cover; border:1px solid var(--border)}
+.pill{display:inline-block; padding:6px 10px; border-radius:999px; background:var(--chip); color:var(--text); font-weight:800; font-size:12px}
+
+@media (max-width:480px){
+  .wrap{max-width:100%; margin:10px auto; padding:0 8px}
+  .match-card{grid-template-columns:68px 1fr auto; padding:10px}
+  .cat-main{font-size:17px}
+  .team-name{font-size:17px}
+  .team-score{font-size:17px}
+  .time-box{font-size:14px}
+}
