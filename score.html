@@ -3,33 +3,190 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ajouter score — Sporting Villette</title>
+  <title>Ajouter score (beta) — Sporting Villette</title>
   <meta name="color-scheme" content="light dark" />
   <style>
-    :root{--brand:#e4362b;--accent:#13b5a6;--bg:#f1f1f1;--text:#0f1522;--border:#cfd6df}
-    @media (prefers-color-scheme: dark){:root{--bg:#0d1117;--text:#f3f5f8;--border:#2a3748}}
-    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
-    .wrap{max-width:760px;margin:18px auto;padding:0 14px}
-    .card{background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 6px 20px rgba(16,21,34,.08);padding:18px}
-    header{display:flex;align-items:center;gap:12px;margin:6px 0 12px}
-    header img{width:44px;height:44px;border-radius:10px;border:1px solid var(--border);object-fit:cover}
-    .club{font-weight:800;font-size:20px}.hint{font-size:12px;opacity:.7}
-    .mini{display:inline-block;text-align:center;padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff;text-decoration:none;font-weight:800;border:none;cursor:pointer}
-    .selected{display:flex;gap:10px;margin:10px 0 14px;padding:12px 14px;border:1px dashed var(--border);border-radius:14px;background:#fff}
-    .sel-teams{font-weight:900}.muted{opacity:.7;font-size:12px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.row.one{grid-template-columns:1fr}
-    label{display:grid;gap:6px}
-    input,select,button{font-size:18px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#fff}
-    .actions{display:grid;gap:8px;margin-top:10px}
-    .msg{min-height:20px}
+    :root{
+      --brand:#e4362b;
+      --accent:#13b5a6;
+      --bg:#f1f1f1;
+      --text:#0f1522;
+      --border:#cfd6df;
+      --muted:#6b7280;
+    }
+    @media (prefers-color-scheme: dark){
+      :root{
+        --bg:#0d1117;
+        --text:#f3f5f8;
+        --border:#2a3748;
+        --muted:#9ca3af;
+      }
+    }
+    body{
+      margin:0;
+      font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      max-width:760px;
+      margin:18px auto;
+      padding:0 14px;
+    }
+    .card{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow:0 6px 20px rgba(16,21,34,.08);
+      padding:18px;
+    }
+    @media (prefers-color-scheme: dark){
+      .card{background:#020617;}
+    }
+    header{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin:6px 0 12px;
+    }
+    header img{
+      width:44px;
+      height:44px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      object-fit:cover;
+    }
+    .club{
+      font-weight:800;
+      font-size:20px;
+    }
+    .hint{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .mini{
+      display:inline-block;
+      text-align:center;
+      padding:10px 12px;
+      border-radius:999px;
+      background:var(--brand);
+      color:#fff;
+      text-decoration:none;
+      font-weight:800;
+      border:none;
+      cursor:pointer;
+      font-size:14px;
+    }
+    .mini:disabled{
+      opacity:.6;
+      cursor:default;
+    }
+    .mini.secondary{
+      background:transparent;
+      color:var(--text);
+      border:1px solid var(--border);
+    }
+    .selected{
+      display:flex;
+      gap:10px;
+      margin:10px 0 14px;
+      padding:10px 12px;
+      border:1px dashed var(--border);
+      border-radius:14px;
+      background:#fff;
+    }
+    @media (prefers-color-scheme: dark){
+      .selected{background:#020617;}
+    }
+    .sel-teams{
+      font-weight:900;
+      font-size:16px;
+    }
+    .muted{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+    .row.one{
+      grid-template-columns:1fr;
+    }
+    label{
+      display:grid;
+      gap:6px;
+      font-size:14px;
+    }
+    input,select,button{
+      font-size:16px;
+      padding:10px 12px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#fff;
+    }
+    @media (prefers-color-scheme: dark){
+      input,select,button{
+        background:#020617;
+        color:var(--text);
+      }
+    }
+    select[readonly]{
+      pointer-events:none;
+      opacity:.9;
+    }
+    .actions{
+      display:grid;
+      gap:8px;
+      margin-top:10px;
+    }
+    .msg{
+      min-height:20px;
+    }
+    .msg.ok{color:#15803d;}
+    .msg.err{color:#b91c1c;}
+
+    /* Contrôles + / − pour le score et le temps */
+    .score-ctrls{
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    .score-ctrls input[type="number"]{
+      max-width:80px;
+      text-align:center;
+    }
+    .score-btn{
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#f6f6f6;
+      padding:2px 10px;
+      font-size:18px;
+      line-height:1;
+      cursor:pointer;
+      min-width:32px;
+    }
+    .score-btn:active{
+      transform:scale(.96);
+    }
+
+    footer{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted);
+    }
   </style>
 </head>
 <body>
   <div class="wrap"><div class="card">
     <header>
       <img alt="Logo du club" src="/form-score-club/assets/logo.png" onerror="this.style.display='none'">
-      <div><div class="club">Ajouter score en direct</div><div class="hint">Match choisi à l’étape précédente</div></div>
-      <a class="mini" style="margin-left:auto" href="https://sportingvillette-beep.github.io/form-score-club/">Accueil</a>
+      <div>
+        <div class="club">Ajouter score en direct (beta)</div>
+        <div class="hint">Match choisi à l’étape précédente</div>
+      </div>
+      <a class="mini secondary" style="margin-left:auto" href="https://sportingvillette-beep.github.io/form-score-club/">Accueil</a>
     </header>
 
     <!-- rappel de la sélection -->
@@ -40,9 +197,10 @@
       </div>
     </div>
 
-    <!-- FORMULAIRE (photo retirée) -->
+    <!-- FORMULAIRE SCORE LIVE -->
     <form id="f" novalidate method="post" action="#">
       <input type="hidden" name="match_id" id="match_id">
+
       <label>État du match
         <select name="etat_match" id="etat_match" required>
           <option value="termine">Terminé</option>
@@ -50,96 +208,338 @@
         </select>
         <span class="muted">Si « En cours », indiquez le temps de jeu.</span>
       </label>
+
       <div class="row">
-        <label><span id="label_dom">Score domicile</span>
-          <input type="number" name="score_dom" id="score_dom" inputmode="numeric" min="0" max="200" required>
+        <label>
+          <span id="label_dom">Score domicile</span>
+          <div class="score-ctrls">
+            <button type="button" class="score-btn" id="score_dom_minus">−</button>
+            <input type="number" name="score_dom" id="score_dom" inputmode="numeric" min="0" max="200" required>
+            <button type="button" class="score-btn" id="score_dom_plus">+</button>
+          </div>
         </label>
-        <label><span id="label_ext">Score extérieur</span>
-          <input type="number" name="score_ext" id="score_ext" inputmode="numeric" min="0" max="200" required>
+
+        <label>
+          <span id="label_ext">Score extérieur</span>
+          <div class="score-ctrls">
+            <button type="button" class="score-btn" id="score_ext_minus">−</button>
+            <input type="number" name="score_ext" id="score_ext" inputmode="numeric" min="0" max="200" required>
+            <button type="button" class="score-btn" id="score_ext_plus">+</button>
+          </div>
         </label>
       </div>
+
       <div class="row one" id="temps_wrapper">
         <label>Temps de jeu (minutes)
-          <input type="number" name="temps_jeu" id="temps_jeu" inputmode="numeric" min="1" max="90" placeholder="ex : 20">
+          <div class="score-ctrls">
+            <button type="button" class="score-btn" id="temps_minus">−</button>
+            <input type="number" name="temps_jeu" id="temps_jeu" inputmode="numeric" min="0" max="120" placeholder="ex : 20">
+            <button type="button" class="score-btn" id="temps_plus">+</button>
+          </div>
         </label>
       </div>
+
       <label>Résultat (auto)
-        <select name="statut" id="statut" required style="pointer-events:none;opacity:.9">
+        <select name="statut" id="statut" required readonly>
           <option value="" disabled selected>— Calculé automatiquement —</option>
-          <option>En cours</option><option>Victoire</option><option>Défaite</option><option>Match Nul</option><option>Terminé</option>
+          <option value="En cours">En cours</option>
+          <option value="Victoire">Victoire</option>
+          <option value="Défaite">Défaite</option>
+          <option value="Match Nul">Match Nul</option>
+          <option value="Terminé">Terminé</option>
         </select>
       </label>
+
       <div class="actions">
         <button type="submit" id="btn" class="mini">Envoyer score</button>
         <div class="msg muted" id="msg"></div>
       </div>
     </form>
 
-    <footer class="muted">Après envoi, retour automatique à l’accueil.</footer>
+    <footer>Vous pouvez rester sur cette page et renvoyer le score autant de fois que nécessaire.</footer>
   </div></div>
 
 <script>
 const CONFIG = {
-  webhookScoreUrl:'https://hook.eu2.make.com/12s2f2licqusjj1xiw3p3tulrfnd5dgw',
-  clubAliases:['Sporting Villette','Villette Genas','Entente Villette Genas','Est Lyonnais','Lyon Est Handball'],
-  maxSizeMB:10
+  webhookScoreUrl: 'https://hook.eu2.make.com/12s2f2licqusjj1xiw3p3tulrfnd5dgw',
+  clubAliases: ['Sporting Villette','Villette Genas','Entente Villette Genas','Est Lyonnais','Lyon Est Handball']
 };
-const U={fmtDate:d=>d?new Date(d).toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long'}):'',fmtTime:d=>d?new Date(d).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):''};
-function getSelection(){ try{ return JSON.parse(sessionStorage.getItem('selectedMatch')||'null'); }catch{return null;} }
-function isFinished(w){return /(victoire|defaite|défaite|match\s*nul|termine|terminé)/i.test(String(w||''));}
-function requireSelection(){ const sel=getSelection(); if(!sel){ location.href='https://sportingvillette-beep.github.io/form-score-club/?selectfirst=1'; return null; } return sel; }
 
-(function init(){
-  const sel=requireSelection(); if(!sel) return;
-  selTeams.textContent=`${sel.equipe1} vs ${sel.equipe2}`;
-  selMeta.textContent=[U.fmtDate(sel._date),U.fmtTime(sel._date),sel.categorie,sel.championnat,sel.ville].filter(Boolean).join(' · ');
-  selBox.hidden=false;
-  match_id.value=sel.match_id;
-  label_dom.textContent='Score '+sel.equipe1;
-  label_ext.textContent='Score '+sel.equipe2;
-  etat_match.value=isFinished(sel.winlose)?'termine':'en_cours';
-  toggleTempsByEtat();
-})();
+// --- helpers sélection / date ---
+
+function getSelection(){
+  try{
+    return JSON.parse(sessionStorage.getItem('selectedMatch') || 'null');
+  }catch{
+    return null;
+  }
+}
+
+function parseMatchDate(sel){
+  if(!sel) return null;
+  if(sel._date){
+    const d = new Date(sel._date);
+    if(!Number.isNaN(d.getTime())) return d;
+  }
+  if(sel.date_str){
+    const parts = String(sel.date_str).split(/[\/\-]/);
+    if(parts.length >= 3){
+      let [j,m,a] = parts.map(Number);
+      if(a < 100) a = 2000 + a;
+      const d = new Date(a, (m||1)-1, j||1);
+      if(sel.heure_str){
+        const hp = String(sel.heure_str).split(':');
+        const hh = parseInt(hp[0] || '0',10);
+        const mm = parseInt(hp[1] || '0',10);
+        d.setHours(hh, mm, 0, 0);
+      }
+      if(!Number.isNaN(d.getTime())) return d;
+    }
+  }
+  return null;
+}
+
+function fmtDate(d){
+  if(!d) return '';
+  return d.toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'2-digit'});
+}
+function fmtTime(d){
+  if(!d) return '';
+  return d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+}
+
+function isFinished(w){
+  return /(victoire|defaite|défaite|match\s*nul|termine|terminé)/i.test(String(w || ''));
+}
+
+function requireSelection(){
+  const sel = getSelection();
+  if(!sel){
+    // si aucun match sélectionné, on renvoie vers l’accueil avec le message
+    location.href = 'https://sportingvillette-beep.github.io/form-score-club/?selectfirst=1';
+    return null;
+  }
+  return sel;
+}
+
+// extraire une minute éventuelle depuis WinLose : "12e", "12ème", "12'"
+function parseMinute(winlose){
+  if(!winlose) return null;
+  const m = String(winlose).trim().match(/^(\d{1,3})\s*(e|’|'|eme|ème)?$/i);
+  return m ? parseInt(m[1],10) : null;
+}
+
+// --- DOM ---
+
+const selBox   = document.getElementById('selBox');
+const selTeams = document.getElementById('selTeams');
+const selMeta  = document.getElementById('selMeta');
+
+const f          = document.getElementById('f');
+const match_id   = document.getElementById('match_id');
+const etat_match = document.getElementById('etat_match');
+const score_dom  = document.getElementById('score_dom');
+const score_ext  = document.getElementById('score_ext');
+const temps_jeu  = document.getElementById('temps_jeu');
+const statut     = document.getElementById('statut');
+const btn        = document.getElementById('btn');
+const msg        = document.getElementById('msg');
+const label_dom  = document.getElementById('label_dom');
+const label_ext  = document.getElementById('label_ext');
+
+const score_dom_minus = document.getElementById('score_dom_minus');
+const score_dom_plus  = document.getElementById('score_dom_plus');
+const score_ext_minus = document.getElementById('score_ext_minus');
+const score_ext_plus  = document.getElementById('score_ext_plus');
+const temps_minus     = document.getElementById('temps_minus');
+const temps_plus      = document.getElementById('temps_plus');
+
+// --- calcul du résultat ---
 
 function computeResult(){
-  if(etat_match.value==='en_cours'){ statut.value='En cours'; return; }
-  const s1=parseInt(score_dom.value,10), s2=parseInt(score_ext.value,10);
-  if(Number.isNaN(s1)||Number.isNaN(s2)){ statut.value=''; return; }
-  if(s1===s2){ statut.value='Match Nul'; return; }
-  const CL=['sporting villette','villette genas','entente villette genas','est lyonnais','lyon est handball'];
-  const eq1=(label_dom.textContent||'').replace(/^Score\s+/,'').toLowerCase();
-  const eq2=(label_ext.textContent||'').replace(/^Score\s+/,'').toLowerCase();
-  const isClub1=CL.some(a=>eq1.includes(a)), isClub2=CL.some(a=>eq2.includes(a));
-  statut.value = s1>s2 ? (isClub1?'Victoire':isClub2?'Défaite':'Terminé')
-                       : (isClub2?'Victoire':isClub1?'Défaite':'Terminé');
-}
-function toggleTempsByEtat(){ const enCours=etat_match.value==='en_cours'; temps_wrapper.hidden=!enCours; if(!enCours) temps_jeu.value=''; computeResult(); }
-etat_match.addEventListener('change',toggleTempsByEtat);
-score_dom.addEventListener('input',computeResult);
-score_ext.addEventListener('input',computeResult);
-temps_jeu.addEventListener('input',()=>{ if((temps_jeu.value||'').trim()!==''){ etat_match.value='en_cours'; toggleTempsByEtat(); }});
+  if(etat_match.value === 'en_cours'){
+    statut.value = 'En cours';
+    return;
+  }
+  const s1 = parseInt(score_dom.value,10);
+  const s2 = parseInt(score_ext.value,10);
+  if(Number.isNaN(s1) || Number.isNaN(s2)){
+    statut.value = '';
+    return;
+  }
+  if(s1 === s2){
+    statut.value = 'Match Nul';
+    return;
+  }
 
-// submit (sans photo)
+  const CL = CONFIG.clubAliases.map(a => a.toLowerCase());
+  const eq1 = (label_dom.textContent || '').replace(/^Score\s+/,'').toLowerCase();
+  const eq2 = (label_ext.textContent || '').replace(/^Score\s+/,'').toLowerCase();
+  const isClub1 = CL.some(a => eq1.includes(a));
+  const isClub2 = CL.some(a => eq2.includes(a));
+
+  if(s1 > s2){
+    statut.value = isClub1 ? 'Victoire' : (isClub2 ? 'Défaite' : 'Terminé');
+  }else{
+    statut.value = isClub2 ? 'Victoire' : (isClub1 ? 'Défaite' : 'Terminé');
+  }
+}
+
+function toggleTempsByEtat(){
+  const enCours = etat_match.value === 'en_cours';
+  const wrapper = document.getElementById('temps_wrapper');
+  if(wrapper){
+    wrapper.style.display = enCours ? '' : 'none';
+  }
+  if(!enCours){
+    temps_jeu.value = '';
+  }
+  computeResult();
+}
+
+// --- incréments + / − ---
+
+function inc(input, delta, min=0, max=200){
+  const cur = parseInt(input.value,10);
+  const next = Number.isNaN(cur) ? Math.max(min,0) : Math.min(max, Math.max(min, cur + delta));
+  input.value = next;
+  computeResult();
+}
+
+function incMinute(delta){
+  const minVal = 0;
+  const maxVal = 120;
+  const cur = parseInt(temps_jeu.value,10);
+  const next = Number.isNaN(cur) ? Math.max(minVal,0) : Math.min(maxVal, Math.max(minVal, cur + delta));
+  temps_jeu.value = next;
+
+  // si on touche au temps, on considère que le match est en cours
+  if(next > 0 && etat_match.value !== 'en_cours'){
+    etat_match.value = 'en_cours';
+    toggleTempsByEtat();
+  }
+}
+
+// --- init ---
+
+(function init(){
+  const sel = requireSelection();
+  if(!sel) return;
+
+  const d = parseMatchDate(sel);
+
+  selTeams.textContent = `${sel.equipe1 || ''} vs ${sel.equipe2 || ''}`;
+  selMeta.textContent = [
+    d ? fmtDate(d) : '',
+    d ? fmtTime(d) : '',
+    sel.categorie || '',
+    sel.championnat || '',
+    sel.ville || ''
+  ].filter(Boolean).join(' · ');
+
+  selBox.hidden = false;
+
+  match_id.value = sel.match_id || '';
+
+  label_dom.textContent = 'Score ' + (sel.equipe1 || 'domicile');
+  label_ext.textContent = 'Score ' + (sel.equipe2 || 'extérieur');
+
+  // état en cours / terminé selon WinLose
+  etat_match.value = isFinished(sel.winlose) ? 'termine' : 'en_cours';
+
+  // pré-remplir les scores si connus
+  if(sel.eq1score != null && String(sel.eq1score).trim() !== ''){
+    score_dom.value = sel.eq1score;
+  }
+  if(sel.eq2score != null && String(sel.eq2score).trim() !== ''){
+    score_ext.value = sel.eq2score;
+  }
+
+  // pré-remplir le temps à partir de WinLose si c'est du type "12e"
+  const minute = parseMinute(sel.winlose);
+  if(minute != null){
+    temps_jeu.value = minute;
+  }
+
+  toggleTempsByEtat();
+  computeResult();
+})();
+
+// --- écouteurs ---
+
+etat_match.addEventListener('change', toggleTempsByEtat);
+score_dom.addEventListener('input', computeResult);
+score_ext.addEventListener('input', computeResult);
+temps_jeu.addEventListener('input', () => {
+  if((temps_jeu.value || '').trim() !== ''){
+    if(etat_match.value !== 'en_cours'){
+      etat_match.value = 'en_cours';
+      toggleTempsByEtat();
+    }
+  }
+});
+
+score_dom_minus.addEventListener('click', () => inc(score_dom, -1));
+score_dom_plus.addEventListener('click',  () => inc(score_dom, +1));
+score_ext_minus.addEventListener('click', () => inc(score_ext, -1));
+score_ext_plus.addEventListener('click',  () => inc(score_ext, +1));
+temps_minus.addEventListener('click',     () => incMinute(-1));
+temps_plus.addEventListener('click',      () => incMinute(+1));
+
+// --- submit (sans photo) ---
+
 f.addEventListener('submit', async (e)=>{
   e.preventDefault();
-  if(match_id.value.trim()==='' || score_dom.value==='' || score_ext.value===''){
-    msg.textContent='Complétez les champs requis.'; msg.className='msg err'; return;
+
+  if(match_id.value.trim() === '' || score_dom.value === '' || score_ext.value === ''){
+    msg.textContent = 'Complétez les champs requis.';
+    msg.className = 'msg err';
+    return;
   }
-  const fd=new FormData(e.target);
-  if(etat_match.value==='en_cours'){
-    const t=(temps_jeu.value||'').trim(); if(!t){ msg.textContent='Indiquez le temps de jeu.'; msg.className='msg err'; return; }
+
+  const fd = new FormData(e.target);
+
+  if(etat_match.value === 'en_cours'){
+    const t = (temps_jeu.value || '').trim();
+    if(!t){
+      msg.textContent = 'Indiquez le temps de jeu.';
+      msg.className = 'msg err';
+      return;
+    }
     fd.set('WinLose', `${parseInt(t,10)}e`);
-  } else {
-    computeResult(); fd.set('WinLose', statut.value||'Terminé');
+  }else{
+    computeResult();
+    fd.set('WinLose', statut.value || 'Terminé');
   }
-  const sel=getSelection(); if(sel){ fd.append('equipe1_label', sel.equipe1||''); fd.append('equipe2_label', sel.equipe2||''); }
+
+  const sel = getSelection();
+  if(sel){
+    fd.append('equipe1_label', sel.equipe1 || '');
+    fd.append('equipe2_label', sel.equipe2 || '');
+  }
+
   try{
-    btn.disabled=true; btn.textContent='Envoi…'; msg.textContent='Transmission…'; msg.className='msg muted';
-    const res=await fetch(CONFIG.webhookScoreUrl,{method:'POST', body:fd}); if(!res.ok) throw 0;
-    msg.textContent='Score envoyé !'; msg.className='msg ok';
-    setTimeout(()=>location.href='https://sportingvillette-beep.github.io/form-score-club/#ok',600);
-  }catch{ msg.textContent='Erreur d’envoi.'; msg.className='msg err'; }
-  finally{ btn.disabled=false; btn.textContent='Envoyer score'; }
+    btn.disabled = true;
+    btn.textContent = 'Envoi…';
+    msg.textContent = 'Transmission…';
+    msg.className = 'msg muted';
+
+    const res = await fetch(CONFIG.webhookScoreUrl,{
+      method:'POST',
+      body:fd
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+
+    msg.textContent = 'Score envoyé !';
+    msg.className = 'msg ok';
+    // on reste sur la page pour pouvoir continuer à mettre à jour le score
+  }catch(err){
+    msg.textContent = 'Erreur d’envoi.';
+    msg.className = 'msg err';
+  }finally{
+    btn.disabled = false;
+    btn.textContent = 'Envoyer score';
+  }
 });
 </script>
 </body>
