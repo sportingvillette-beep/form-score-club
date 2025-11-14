@@ -238,6 +238,20 @@
       margin-top:8px;
       font-size:11px;
     }
+/* Filtres catégorie / genre */
+.filters{
+  display:flex;
+  gap:6px;
+  align-items:center;
+  margin:4px 0 6px;
+  flex-wrap:wrap;
+}
+.filters select{
+  padding:4px 8px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  font-size:12px;
+}
 
   </style>
 </head>
@@ -253,11 +267,26 @@
       </header>
 
       <!-- 1) LISTE EN PREMIER -->
-      <section class="matches">
-        <h3>Rencontres (J-2 → J+5)</h3>
-        <div id="matchesMsg" class="muted">Chargement des matchs…</div>
-        <div id="daysContainer"></div>
-      </section>
+ <section class="matches">
+  <h3>Rencontres (J-2 → J+5)</h3>
+  <div id="matchesMsg" class="muted">Chargement des matchs…</div>
+
+  <!-- Filtres catégorie / genre -->
+  <div class="filters">
+    <select id="filterCategory">
+      <option value="">Toutes catégories</option>
+      <!-- les options seront ajoutées automatiquement en JS -->
+    </select>
+    <select id="filterGender">
+      <option value="">Tous</option>
+      <option value="G">Garçons</option>
+      <option value="F">Filles</option>
+    </select>
+  </div>
+
+  <div id="daysContainer"></div>
+</section>
+
 
       <!-- Sélection courante -->
       <div id="selected" class="selected" hidden>
@@ -329,6 +358,65 @@
       return /(victoire|defaite|défaite|match\s*nul|termine|terminé)/i.test(w);
     }
     function sameDay(a,b){ return a && b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+
+    // --- Filtres catégorie / genre ---
+let ALL_MATCHES = [];
+
+function detectGender(m){
+  // 1) priorité à la colonne "genre" si elle est remplie
+  const direct = (m.genre || '').toString().toUpperCase();
+  if (direct.includes('F')) return 'F';
+  if (direct.includes('G')) return 'G';
+
+  // 2) sinon, on essaie de le deviner à partir de la catégorie / nom d’équipe
+  const txt = [m.categorie, m.equipe1, m.equipe2]
+    .filter(Boolean)
+    .join(' ')
+    .toUpperCase();
+
+  if (/\bF\b/.test(txt) || txt.includes('FILLE') || txt.includes('FEM')) return 'F';
+  if (/\bG\b/.test(txt) || txt.includes('GARCON') || txt.includes('GARÇON')) return 'G';
+
+  return '';
+}
+
+function populateFilters(){
+  const selCat = document.getElementById('filterCategory');
+  if (!selCat) return;
+
+  // On garde la première option "Toutes catégories"
+  selCat.innerHTML = '<option value="">Toutes catégories</option>';
+
+  const seen = new Set();
+  ALL_MATCHES.forEach(m => {
+    const c = (m.categorie || '').trim();
+    if (!c || seen.has(c)) return;
+    seen.add(c);
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    selCat.appendChild(opt);
+  });
+}
+
+function applyFilters(){
+  let subset = ALL_MATCHES.slice();
+  const selCat = document.getElementById('filterCategory');
+  const selGender = document.getElementById('filterGender');
+  const catVal = selCat ? selCat.value : '';
+  const genderVal = selGender ? selGender.value : '';
+
+  if (catVal){
+    subset = subset.filter(m => (m.categorie || '').trim() === catVal);
+  }
+  if (genderVal){
+    subset = subset.filter(m => (m._gender || '') === genderVal);
+  }
+
+  renderList(subset);
+}
+
+    
     function rightChipsForMatch(m){
       const chips=[];
       const now=new Date();
@@ -386,30 +474,44 @@
         const res=await fetch(CONFIG.gsheetCsvUrl,{cache:'no-store'}); if(!res.ok) throw 0;
         const csv=await res.text(), rows=csvToRows(csv);
         const headers=rows.shift().map(h=>h.trim()); const idx=Object.fromEntries(headers.map((h,i)=>[h.toLowerCase(),i]));
-        const items=rows.map(r=>{
-          const d=r[idx[L.date]], h=r[idx[L.heure]], dt=U.parseDateTimeFR(d,h);
-          const e1=(r[idx[L.equipe1]]||'').trim(), e1x=(r[idx[L.equipe1x]]||'').trim();
-          const e2=(r[idx[L.equipe2]]||'').trim(), e2x=(r[idx[L.equipe2x]]||'').trim();
-          const photo=(r[idx[L.photo]]||'').trim();
-          return { match_id:r[idx[L.match_id]], date_str:d, heure_str:h, _date:dt,
-                   categorie:r[idx[L.categorie]], genre:r[idx[L.genre]]||'', championnat:r[idx[L.championnat]],
-                   equipe1:(e1+(e1x?` ${e1x}`:'' )).trim(), equipe2:(e2+(e2x?` ${e2x}`:'' )).trim(),
-                   eq1score:r[idx[L.eq1score]], eq2score:r[idx[L.eq2score]], winlose:r[idx[L.winlose]],
-                   gymnase:r[idx[L.gymnase]], ville:r[idx[L.ville]], photo:(/^https?:\/\//.test(photo)?photo:'') };
-        }).filter(x=>x&&x.match_id&&x._date);
+const items=rows.map(r=>{
+  const d=r[idx[L.date]], h=r[idx[L.heure]], dt=U.parseDateTimeFR(d,h);
+  const e1=(r[idx[L.equipe1]]||'').trim(), e1x=(r[idx[L.equipe1x]]||'').trim();
+  const e2=(r[idx[L.equipe2]]||'').trim(), e2x=(r[idx[L.equipe2x]]||'').trim();
+  const photo=(r[idx[L.photo]]||'').trim();
+
+  const obj = {
+    match_id:r[idx[L.match_id]], date_str:d, heure_str:h, _date:dt,
+    categorie:r[idx[L.categorie]], genre:r[idx[L.genre]]||'', championnat:r[idx[L.championnat]],
+    equipe1:(e1+(e1x?` ${e1x}`:'' )).trim(), equipe2:(e2+(e2x?` ${e2x}`:'' )).trim(),
+    eq1score:r[idx[L.eq1score]], eq2score:r[idx[L.eq2score]], winlose:r[idx[L.winlose]],
+    gymnase:r[idx[L.gymnase]], ville:r[idx[L.ville]],
+    photo:(/^https?:\/\//.test(photo)?photo:'')
+  };
+
+  // on calcule le genre normalisé "G" / "F"
+  obj._gender = detectGender(obj);
+  return obj;
+}).filter(x=>x&&x.match_id&&x._date);
+
 
         const base=new Date(); base.setHours(0,0,0,0);
         const start=new Date(base); start.setDate(start.getDate()-(CONFIG.dateWindow.pastDays||2));
         const end=new Date(base); end.setDate(end.getDate()+(CONFIG.dateWindow.futureDays||5));
-        const filtered=items.filter(x=>x._date>=start && x._date<=end).sort((a,b)=>a._date-b._date);
+const filtered=items.filter(x=>x._date>=start && x._date<=end).sort((a,b)=>a._date-b._date);
 
-        renderList(filtered);
-        msg.textContent='';
+// on mémorise la liste pour les filtres
+ALL_MATCHES = filtered;
+populateFilters();
+applyFilters();
+msg.textContent='';
+
 
         // 🔄 resynchronise la sélection mémorisée (pour récupérer un WinLose mis à jour)
         const remembered = getSelection();
         if (remembered) {
-          const updated = filtered.find(x => x.match_id === remembered.match_id);
+          const updated = ALL_MATCHES.find(x => x.match_id === remembered.match_id);
+
           if (updated) onPick(updated);
         }
       }catch{ msg.textContent="Impossible de charger la liste des matchs."; }
@@ -526,16 +628,24 @@
       location.href='https://sportingvillette-beep.github.io/form-score-club/'+path;
     }
 
-    (function init(){
-      if (new URLSearchParams(location.search).has('selectfirst')) {
-        document.getElementById('needSelect').hidden=false;
-        window.scrollTo({top:0,behavior:'smooth'});
-      }
-      const already=getSelection();
-      if(already){ onPick(already); }
-      loadMatches();
+ (function init(){
+  if (new URLSearchParams(location.search).has('selectfirst')) {
+    document.getElementById('needSelect').hidden=false;
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  const already=getSelection();
+  if(already){ onPick(already); }
 
-      document.getElementById('changeBtn').addEventListener('click',()=>{
+  // écouteurs sur les filtres
+  const selCat = document.getElementById('filterCategory');
+  const selGender = document.getElementById('filterGender');
+  if (selCat) selCat.addEventListener('change', applyFilters);
+  if (selGender) selGender.addEventListener('change', applyFilters);
+
+  loadMatches();
+
+  document.getElementById('changeBtn').addEventListener('click',()=>{
+
         sessionStorage.removeItem('selectedMatch');
         document.getElementById('selected').hidden=true;
         document.getElementById('needSelect').hidden=false;
