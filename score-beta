@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ajouter score — Sporting Villette</title>
+  <meta name="color-scheme" content="light dark" />
+  <style>
+    :root{--brand:#e4362b;--accent:#13b5a6;--bg:#f1f1f1;--text:#0f1522;--border:#cfd6df}
+    @media (prefers-color-scheme: dark){:root{--bg:#0d1117;--text:#f3f5f8;--border:#2a3748}}
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:760px;margin:18px auto;padding:0 14px}
+    .card{background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 6px 20px rgba(16,21,34,.08);padding:18px}
+    header{display:flex;align-items:center;gap:12px;margin:6px 0 12px}
+    header img{width:44px;height:44px;border-radius:10px;border:1px solid var(--border);object-fit:cover}
+    .club{font-weight:800;font-size:20px}.hint{font-size:12px;opacity:.7}
+    .mini{display:inline-block;text-align:center;padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff;text-decoration:none;font-weight:800;border:none;cursor:pointer}
+    .selected{display:flex;gap:10px;margin:10px 0 14px;padding:12px 14px;border:1px dashed var(--border);border-radius:14px;background:#fff}
+    .sel-teams{font-weight:900}.muted{opacity:.7;font-size:12px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.row.one{grid-template-columns:1fr}
+    label{display:grid;gap:6px}
+    input,select,button{font-size:18px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#fff}
+    .actions{display:grid;gap:8px;margin-top:10px}
+    .msg{min-height:20px}
+  </style>
+</head>
+<body>
+  <div class="wrap"><div class="card">
+    <header>
+      <img alt="Logo du club" src="/form-score-club/assets/logo.png" onerror="this.style.display='none'">
+      <div><div class="club">Ajouter score en direct</div><div class="hint">Match choisi à l’étape précédente</div></div>
+      <a class="mini" style="margin-left:auto" href="https://sportingvillette-beep.github.io/form-score-club/">Accueil</a>
+    </header>
+
+    <!-- rappel de la sélection -->
+    <div class="selected" id="selBox" hidden>
+      <div>
+        <div class="sel-teams" id="selTeams"></div>
+        <div class="muted" id="selMeta"></div>
+      </div>
+    </div>
+
+    <!-- FORMULAIRE (photo retirée) -->
+    <form id="f" novalidate method="post" action="#">
+      <input type="hidden" name="match_id" id="match_id">
+      <label>État du match
+        <select name="etat_match" id="etat_match" required>
+          <option value="termine">Terminé</option>
+          <option value="en_cours" selected>En cours</option>
+        </select>
+        <span class="muted">Si « En cours », indiquez le temps de jeu.</span>
+      </label>
+      <div class="row">
+        <label><span id="label_dom">Score domicile</span>
+          <input type="number" name="score_dom" id="score_dom" inputmode="numeric" min="0" max="200" required>
+        </label>
+        <label><span id="label_ext">Score extérieur</span>
+          <input type="number" name="score_ext" id="score_ext" inputmode="numeric" min="0" max="200" required>
+        </label>
+      </div>
+      <div class="row one" id="temps_wrapper">
+        <label>Temps de jeu (minutes)
+          <input type="number" name="temps_jeu" id="temps_jeu" inputmode="numeric" min="1" max="90" placeholder="ex : 20">
+        </label>
+      </div>
+      <label>Résultat (auto)
+        <select name="statut" id="statut" required style="pointer-events:none;opacity:.9">
+          <option value="" disabled selected>— Calculé automatiquement —</option>
+          <option>En cours</option><option>Victoire</option><option>Défaite</option><option>Match Nul</option><option>Terminé</option>
+        </select>
+      </label>
+      <div class="actions">
+        <button type="submit" id="btn" class="mini">Envoyer score</button>
+        <div class="msg muted" id="msg"></div>
+      </div>
+    </form>
+
+    <footer class="muted">Après envoi, retour automatique à l’accueil.</footer>
+  </div></div>
+
+<script>
+const CONFIG = {
+  webhookScoreUrl:'https://hook.eu2.make.com/12s2f2licqusjj1xiw3p3tulrfnd5dgw',
+  clubAliases:['Sporting Villette','Villette Genas','Entente Villette Genas','Est Lyonnais','Lyon Est Handball'],
+  maxSizeMB:10
+};
+const U={fmtDate:d=>d?new Date(d).toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long'}):'',fmtTime:d=>d?new Date(d).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):''};
+function getSelection(){ try{ return JSON.parse(sessionStorage.getItem('selectedMatch')||'null'); }catch{return null;} }
+function isFinished(w){return /(victoire|defaite|défaite|match\s*nul|termine|terminé)/i.test(String(w||''));}
+function requireSelection(){ const sel=getSelection(); if(!sel){ location.href='https://sportingvillette-beep.github.io/form-score-club/?selectfirst=1'; return null; } return sel; }
+
+(function init(){
+  const sel=requireSelection(); if(!sel) return;
+  selTeams.textContent=`${sel.equipe1} vs ${sel.equipe2}`;
+  selMeta.textContent=[U.fmtDate(sel._date),U.fmtTime(sel._date),sel.categorie,sel.championnat,sel.ville].filter(Boolean).join(' · ');
+  selBox.hidden=false;
+  match_id.value=sel.match_id;
+  label_dom.textContent='Score '+sel.equipe1;
+  label_ext.textContent='Score '+sel.equipe2;
+  etat_match.value=isFinished(sel.winlose)?'termine':'en_cours';
+  toggleTempsByEtat();
+})();
+
+function computeResult(){
+  if(etat_match.value==='en_cours'){ statut.value='En cours'; return; }
+  const s1=parseInt(score_dom.value,10), s2=parseInt(score_ext.value,10);
+  if(Number.isNaN(s1)||Number.isNaN(s2)){ statut.value=''; return; }
+  if(s1===s2){ statut.value='Match Nul'; return; }
+  const CL=['sporting villette','villette genas','entente villette genas','est lyonnais','lyon est handball'];
+  const eq1=(label_dom.textContent||'').replace(/^Score\s+/,'').toLowerCase();
+  const eq2=(label_ext.textContent||'').replace(/^Score\s+/,'').toLowerCase();
+  const isClub1=CL.some(a=>eq1.includes(a)), isClub2=CL.some(a=>eq2.includes(a));
+  statut.value = s1>s2 ? (isClub1?'Victoire':isClub2?'Défaite':'Terminé')
+                       : (isClub2?'Victoire':isClub1?'Défaite':'Terminé');
+}
+function toggleTempsByEtat(){ const enCours=etat_match.value==='en_cours'; temps_wrapper.hidden=!enCours; if(!enCours) temps_jeu.value=''; computeResult(); }
+etat_match.addEventListener('change',toggleTempsByEtat);
+score_dom.addEventListener('input',computeResult);
+score_ext.addEventListener('input',computeResult);
+temps_jeu.addEventListener('input',()=>{ if((temps_jeu.value||'').trim()!==''){ etat_match.value='en_cours'; toggleTempsByEtat(); }});
+
+// submit (sans photo)
+f.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  if(match_id.value.trim()==='' || score_dom.value==='' || score_ext.value===''){
+    msg.textContent='Complétez les champs requis.'; msg.className='msg err'; return;
+  }
+  const fd=new FormData(e.target);
+  if(etat_match.value==='en_cours'){
+    const t=(temps_jeu.value||'').trim(); if(!t){ msg.textContent='Indiquez le temps de jeu.'; msg.className='msg err'; return; }
+    fd.set('WinLose', `${parseInt(t,10)}e`);
+  } else {
+    computeResult(); fd.set('WinLose', statut.value||'Terminé');
+  }
+  const sel=getSelection(); if(sel){ fd.append('equipe1_label', sel.equipe1||''); fd.append('equipe2_label', sel.equipe2||''); }
+  try{
+    btn.disabled=true; btn.textContent='Envoi…'; msg.textContent='Transmission…'; msg.className='msg muted';
+    const res=await fetch(CONFIG.webhookScoreUrl,{method:'POST', body:fd}); if(!res.ok) throw 0;
+    msg.textContent='Score envoyé !'; msg.className='msg ok';
+    setTimeout(()=>location.href='https://sportingvillette-beep.github.io/form-score-club/#ok',600);
+  }catch{ msg.textContent='Erreur d’envoi.'; msg.className='msg err'; }
+  finally{ btn.disabled=false; btn.textContent='Envoyer score'; }
+});
+</script>
+</body>
+</html>
