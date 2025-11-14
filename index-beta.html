@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sporting Villette — Scores & Photos</title>
+  <meta name="color-scheme" content="light dark" />
+  <style>
+    :root{--brand:#e4362b;--accent:#13b5a6;--deep:#10056b;--bg:#f1f1f1;--card:#ffffff;--text:#0f1522;--muted:#4b5565;--border:#cfd6df;--chip:#f6f8fb;--shadow:0 6px 20px rgba(16,21,34,.08)}
+    @media (prefers-color-scheme: dark){:root{--bg:#0d1117;--card:#0f141b;--text:#f3f5f8;--muted:#c5ccd6;--border:#2a3748;--chip:#172231}}
+
+    html,body{height:100%}body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:760px;margin:18px auto;padding:0 14px}.card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:18px}
+    header{display:flex;align-items:center;gap:12px;margin:6px 0 12px} header img{width:44px;height:44px;border-radius:10px;object-fit:cover;border:1px solid var(--border)}
+    .club{font-weight:800;letter-spacing:.2px;font-size:20px}.hint{font-size:12px;color:var(--muted)}
+
+    .banner{margin:-6px 0 10px;padding:10px 12px;border-radius:12px;background:#fff5f5;border:1px solid #ffd1d1;color:#7a1a11;font-weight:700}
+    .toolbar{display:grid;gap:8px;margin:14px 0 0}.toolbar .row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+    .mini{display:inline-block;text-align:center;padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff;text-decoration:none;font-weight:800;border:none;cursor:pointer}
+    .mini[disabled]{opacity:.6;cursor:not-allowed;filter:grayscale(.2)}
+
+    .selected{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 8px;padding:12px 14px;border:1px dashed var(--border);border-radius:14px;background:#fff}
+    .sel-teams{font-weight:900}.muted{color:var(--muted);font-size:12px}
+
+    .day-section{margin:14px 0 8px;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--card)}
+    .day-head{position:sticky;top:0;z-index:5;background:var(--card);padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:8px}
+    .day-title{font-weight:900;text-transform:capitalize}.day-sub{margin-left:auto;color:var(--muted);font-size:12px}
+    .list{display:grid;gap:10px;padding:10px 10px 14px}
+
+    .match-card{width:100%;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:var(--card);cursor:pointer}
+    .match-card:active{transform:scale(.99)} .time-col{display:flex;flex-direction:column;align-items:center;gap:6px}
+    .time-box{display:flex;align-items:center;justify-content:center;width:64px;padding:10px;border-radius:12px;background:#e8ecff;border:1px solid #ced6ff;color:var(--deep);font-weight:900}
+    .code-chip{font-size:11px;font-weight:800;letter-spacing:.2px;color:#2b3447;background:#eef1f6;border:1px solid var(--border);border-radius:999px;padding:4px 8px;line-height:1}
+    .teams{display:grid;gap:6px;min-width:0}.team-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px}
+    .team-name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.team-score{min-width:42px;text-align:right;font-weight:900;color:var(--deep)}
+    .meta-line{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}.meta-cat{color:var(--accent);font-weight:900;font-size:16px}.meta-place{color:var(--muted);font-size:13px}
+    .right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;justify-self:end}
+    @media (max-width:420px){.match-card{grid-template-columns:64px 1fr auto}.right{grid-column:1 / -1;align-items:flex-start}}
+
+    /* Pastilles */
+    .chip{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;background:var(--chip);border:1px solid var(--border);font-weight:900;font-size:12px}
+    .chip-live{background:#fff5db;border-color:#ffe8a1;color:#8a6d3b}
+    .chip-time{background:#e6f2ff;border-color:#cfe5ff;color:#0b3c91}
+    .chip-wait{background:#f8f8f8;color:#697180}
+    .dot{width:6px;height:6px;border-radius:999px;background:currentColor;display:inline-block}
+    @media (prefers-color-scheme: dark){
+      .chip-live{background:#2a2108;border-color:#4a3c14;color:#ffdc73}
+      .chip-time{background:#0f1e33;border-color:#1d3050;color:#9fc3ff}
+      .chip-wait{background:#141a23;color:#9aa6b2}
+    }
+
+    /* Miniature + lightbox */
+    .thumb-wrap{display:block;margin-top:6px}
+    .thumb-btn{border:0;background:none;padding:0;cursor:zoom-in}
+    .thumb{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+    .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center}
+    .lightbox.open{display:flex}
+    .lightbox img{max-width:92vw;max-height:92vh;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <header>
+        <img alt="Logo du club" src="/form-score-club/assets/logo.png" onerror="this.style.display='none'">
+        <div>
+          <div class="club">Sporting Villette</div>
+          <div class="hint">Sélectionnez d’abord une rencontre, puis l’action.</div>
+        </div>
+      </header>
+
+      <!-- 1) LISTE EN PREMIER -->
+      <section class="matches">
+        <h3>Rencontres (J-2 → J+5)</h3>
+        <div id="matchesMsg" class="muted">Chargement des matchs…</div>
+        <div id="daysContainer"></div>
+      </section>
+
+      <!-- Sélection courante -->
+      <div id="selected" class="selected" hidden>
+        <div>
+          <div class="sel-teams" id="selTeams"></div>
+          <div class="muted" id="selMeta"></div>
+        </div>
+        <button type="button" id="changeBtn" class="mini">Changer</button>
+      </div>
+
+      <!-- 2) Boutons -->
+      <div id="needSelect" class="banner" hidden>Veuillez sélectionner un match ci-dessus pour activer les actions.</div>
+      <div class="toolbar">
+        <div class="row">
+          <button class="mini" id="goLive"  disabled>1) Ajouter score en direct</button>
+          <button class="mini" id="goFinal" disabled title="Réservé aux matchs terminés">2) Ajouter photo fin de match</button>
+          <button class="mini" id="goPhotos" disabled>3) Ajouter photos</button>
+        </div>
+        <div class="muted">Astuce : la sélection est gardée pendant la session.</div>
+      </div>
+
+      <footer class="muted">Retour depuis les formulaires → cette page, avec sélection conservée.</footer>
+    </div>
+  </div>
+
+  <!-- Lightbox (zoom) -->
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Agrandissement photo">
+    <img id="lightboxImg" alt="">
+  </div>
+
+  <script>
+    // --- Config ---
+    const CONFIG = {
+      gsheetCsvUrl:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQvskuueB25qKj0hbDWjFPomFdhfWRduUsNLp6Kv-za4t4oXcbbLsLrNsjwIt0ZH7C9B75pYBGDJfQu/pub?gid=0&single=true&output=csv',
+      fields:{ match_id:'Code Gesthand', date:'Date', heure:'Heure', categorie:'Catégorie', genre:'Genre', championnat:'Championnat',
+               equipe1:'Eq1', equipe1x:'Eq1X', equipe2:'Eq2', equipe2x:'Eq2X', eq1score:'Eq1Score', eq2score:'Eq2Score',
+               winlose:'WinLose', gymnase:'Gymnase', ville:'Ville', photo:'PhotoEq' },
+      dateWindow:{pastDays:2, futureDays:5}
+    };
+    const F = CONFIG.fields;
+    const L = Object.fromEntries(Object.entries(F).map(([k,v]) => [k,(v||'').toLowerCase()]));
+
+    // --- Utils robustes ---
+    const U = {
+      parseDateFR: v => {
+        if (!v) return null;
+        const m = String(v).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+        if (m){ const d=m[1].padStart(2,'0'), mo=m[2].padStart(2,'0'), y=m[3]; return new Date(`${y}-${mo}-${d}T00:00:00`); }
+        const d = new Date(v); return isNaN(d) ? null : d;
+      },
+      parseDateTimeFR: (ds, ts) => {
+        const d = U.parseDateFR(ds); if (!d) return null;
+        const [h='00', m='00'] = String(ts||'00:00').split(':');
+        const dt = new Date(d); dt.setHours(+h||0, +m||0, 0, 0); return dt;
+      },
+      fmtDate: d => { const t = d instanceof Date ? d : new Date(d); return isNaN(t)?'':t.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long'}); },
+      fmtTime: d => { const t = d instanceof Date ? d : new Date(d); return isNaN(t)?'':t.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}); }
+    };
+
+    // --- Pastilles ---
+    function parseMinute(winlose){
+      if(!winlose) return null;
+      const m=String(winlose).trim().match(/^(\d{1,3})\s*(e|’|'|eme|ème)?$/i);
+      return m?parseInt(m[1],10):null;
+    }
+    function isFinished(winlose){
+      if(!winlose) return false;
+      const w=String(winlose);
+      return /(victoire|defaite|défaite|match\s*nul|termine|terminé)/i.test(w);
+    }
+    function sameDay(a,b){ return a && b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+    function rightChipsForMatch(m){
+      const chips=[];
+      const now=new Date();
+      const start=m._date;
+      const minsSinceStart = (start && now>start)? Math.floor((now-start)/60000) : null;
+
+      const s1 = (m.eq1score!=null && String(m.eq1score).trim()!=='') ? Number(m.eq1score) : null;
+      const s2 = (m.eq2score!=null && String(m.eq2score).trim()!=='') ? Number(m.eq2score) : null;
+      const hasScore = (s1!==null && s2!==null);
+
+      const minute = parseMinute(m.winlose);
+      const finished = isFinished(m.winlose);
+
+      if (!hasScore){
+        if (start && sameDay(start, now) && minsSinceStart!==null && !finished){
+          if (minsSinceStart <= 90) chips.push(`<span class="chip chip-live"><span class="dot"></span> LIVE</span>`);
+          else chips.push(`<span class="chip chip-wait">Attente score final</span>`);
+        }
+      } else {
+        if (minute!=null){
+          if (start && minsSinceStart!==null && minsSinceStart > 120){
+            chips.push(`<span class="chip chip-wait">Attente score final</span>`);
+          }else{
+            chips.push(`<span class="chip chip-time">${minute}e</span>`);
+          }
+        } else if (finished){
+          const label = String(m.winlose).trim();
+          chips.push(`<span class="chip">${label}</span>`);
+        }
+      }
+      return chips.join('');
+    }
+
+    // --- CSV parsing ---
+    function csvToRows(csv){
+      const rows=[], cur=[]; let i=0,f='',q=false;
+      while(i<csv.length){
+        const c=csv[i++];
+        if(c==='"'){ if(q&&csv[i]==='"'){f+='"';i++;} else q=!q; }
+        else if(c===','&&!q){ cur.push(f); f=''; }
+        else if((c==='\n'||c==='\r')&&!q){ if(f!==''||cur.length){cur.push(f); rows.push(cur.splice(0)); f='';} }
+        else { f+=c; }
+      }
+      if(f!==''||cur.length){ cur.push(f); rows.push(cur); }
+      return rows.filter(r => r.length && r.join('').trim()!=='');
+    }
+
+    function saveSelection(m){ sessionStorage.setItem('selectedMatch', JSON.stringify(m)); }
+    function getSelection(){ try{ const s=JSON.parse(sessionStorage.getItem('selectedMatch')||'null'); if(s && s._date && !(s._date instanceof Date)) s._date=new Date(s._date); return s; }catch{return null;} }
+
+    // --- Chargement & rendu ---
+    async function loadMatches(){
+      const msg=document.getElementById('matchesMsg');
+      try{
+        const res=await fetch(CONFIG.gsheetCsvUrl,{cache:'no-store'}); if(!res.ok) throw 0;
+        const csv=await res.text(), rows=csvToRows(csv);
+        const headers=rows.shift().map(h=>h.trim()); const idx=Object.fromEntries(headers.map((h,i)=>[h.toLowerCase(),i]));
+        const items=rows.map(r=>{
+          const d=r[idx[L.date]], h=r[idx[L.heure]], dt=U.parseDateTimeFR(d,h);
+          const e1=(r[idx[L.equipe1]]||'').trim(), e1x=(r[idx[L.equipe1x]]||'').trim();
+          const e2=(r[idx[L.equipe2]]||'').trim(), e2x=(r[idx[L.equipe2x]]||'').trim();
+          const photo=(r[idx[L.photo]]||'').trim();
+          return { match_id:r[idx[L.match_id]], date_str:d, heure_str:h, _date:dt,
+                   categorie:r[idx[L.categorie]], genre:r[idx[L.genre]]||'', championnat:r[idx[L.championnat]],
+                   equipe1:(e1+(e1x?` ${e1x}`:'' )).trim(), equipe2:(e2+(e2x?` ${e2x}`:'' )).trim(),
+                   eq1score:r[idx[L.eq1score]], eq2score:r[idx[L.eq2score]], winlose:r[idx[L.winlose]],
+                   gymnase:r[idx[L.gymnase]], ville:r[idx[L.ville]], photo:(/^https?:\/\//.test(photo)?photo:'') };
+        }).filter(x=>x&&x.match_id&&x._date);
+
+        const base=new Date(); base.setHours(0,0,0,0);
+        const start=new Date(base); start.setDate(start.getDate()-(CONFIG.dateWindow.pastDays||2));
+        const end=new Date(base); end.setDate(end.getDate()+(CONFIG.dateWindow.futureDays||5));
+        const filtered=items.filter(x=>x._date>=start && x._date<=end).sort((a,b)=>a._date-b._date);
+
+        renderList(filtered);
+        msg.textContent='';
+
+        // 🔄 resynchronise la sélection mémorisée (pour récupérer un WinLose mis à jour)
+        const remembered = getSelection();
+        if (remembered) {
+          const updated = filtered.find(x => x.match_id === remembered.match_id);
+          if (updated) onPick(updated);
+        }
+      }catch{ msg.textContent="Impossible de charger la liste des matchs."; }
+    }
+
+    function renderList(matches){
+      const container=document.getElementById('daysContainer'); container.innerHTML='';
+      const byDay={};
+      for(const m of matches){
+        const k=new Date(m._date.getFullYear(),m._date.getMonth(),m._date.getDate()).toISOString();
+        (byDay[k] ||= []).push(m);
+      }
+      const keys=Object.keys(byDay).sort((a,b)=> new Date(a)-new Date(b));
+      for(const k of keys){
+        const d=new Date(k);
+        const sec=document.createElement('div'); sec.className='day-section';
+        sec.innerHTML=`<div class="day-head"><div class="day-title">${U.fmtDate(d)}</div><div class="day-sub">${byDay[k].length} match${byDay[k].length>1?'s':''}</div></div>`;
+        const list=document.createElement('div'); list.className='list';
+        byDay[k].forEach(m=>{
+          const s1=(m.eq1score!==''&&m.eq1score!=null)?Number(m.eq1score):null;
+          const s2=(m.eq2score!==''&&m.eq2score!=null)?Number(m.eq2score):null;
+
+          const btn=document.createElement('button'); btn.type='button'; btn.className='match-card';
+          const chips = rightChipsForMatch(m);
+          const thumb = m.photo ? `
+            <span class="thumb-wrap">
+              <button class="thumb-btn" aria-label="Agrandir la photo"
+                      onclick="event.stopPropagation();openLightbox('${m.photo.replace(/'/g,'&#39;')}')">
+                <img class="thumb" src="${m.photo}" alt="Photo du match">
+              </button>
+            </span>` : '';
+
+          btn.innerHTML=`
+            <div class="time-col">
+              <div class="time-box">${U.fmtTime(m._date)}</div>
+              <div class="code-chip">${m.match_id}</div>
+            </div>
+            <div class="teams">
+              <div class="team-row"><div class="team-name">${m.equipe1}</div><div class="team-score">${s1??''}</div></div>
+              <div class="team-row"><div class="team-name">${m.equipe2}</div><div class="team-score">${s2??''}</div></div>
+              <div class="meta-line">${(m.categorie||m.genre||m.championnat)?`<span class="meta-cat">${[m.categorie,m.genre,m.championnat].filter(Boolean).join(' ')}</span>`:''}</div>
+              <div class="meta-line">${(m.ville||m.gymnase)?`<span class="meta-place">${[m.ville,m.gymnase].filter(Boolean).join(' · ')}</span>`:''}</div>
+            </div>
+            <div class="right">
+              ${chips}
+              ${thumb}
+            </div>`;
+          btn.addEventListener('click',()=> onPick(m));
+          list.appendChild(btn);
+        });
+        sec.appendChild(list); container.appendChild(sec);
+      }
+    }
+
+    // --- Lightbox ---
+    function openLightbox(src){ 
+      lightboxImg.src=src; 
+      lightbox.classList.add('open'); 
+    }
+    function closeLightbox(){ 
+      lightbox.classList.remove('open'); 
+      lightboxImg.src=''; 
+    }
+    lightbox.addEventListener('click', closeLightbox);
+    window.addEventListener('keydown', e=>{ if(e.key==='Escape') closeLightbox(); });
+    // expo pour onclick inline
+    window.openLightbox = openLightbox;
+
+    // --- Sélection + boutons ---
+    function onPick(m){
+      saveSelection(m);
+
+      document.getElementById('selTeams').textContent=`${m.equipe1} vs ${m.equipe2}`;
+      document.getElementById('selMeta').textContent=[U.fmtDate(m._date),U.fmtTime(m._date),m.categorie,m.championnat,m.ville].filter(Boolean).join(' · ');
+      document.getElementById('selected').hidden=false;
+
+      // cacher le warning
+      const warn = document.getElementById('needSelect');
+      warn.textContent = 'Veuillez sélectionner un match ci-dessus pour activer les actions.';
+      warn.hidden = true;
+
+      // états des boutons
+      const btnLive   = document.getElementById('goLive');
+      const btnFinal  = document.getElementById('goFinal');
+      const btnPhotos = document.getElementById('goPhotos');
+
+      btnLive.disabled   = false;
+      btnPhotos.disabled = false;
+
+      const finished = isFinished(m.winlose);
+      btnFinal.disabled = !finished;
+      btnFinal.title = finished ? '' : 'Réservé aux matchs terminés';
+    }
+
+    function navIfSelected(path){
+      const sel=getSelection();
+      const warn=document.getElementById('needSelect');
+
+      if(!sel){
+        warn.textContent = 'Veuillez sélectionner un match ci-dessus pour activer les actions.';
+        warn.hidden=false;
+        window.scrollTo({top:0,behavior:'smooth'});
+        return;
+      }
+
+      // verrou “photo fin de match” si non terminé
+      if (path === 'photo-finale.html' && !isFinished(sel.winlose)) {
+        warn.textContent = '“Photo fin de match” est réservé aux matchs terminés.';
+        warn.hidden=false;
+        window.scrollTo({top:0,behavior:'smooth'});
+        return;
+      }
+
+      location.href='https://sportingvillette-beep.github.io/form-score-club/'+path;
+    }
+
+    (function init(){
+      if (new URLSearchParams(location.search).has('selectfirst')) {
+        document.getElementById('needSelect').hidden=false;
+        window.scrollTo({top:0,behavior:'smooth'});
+      }
+      const already=getSelection();
+      if(already){ onPick(already); }
+      loadMatches();
+
+      document.getElementById('changeBtn').addEventListener('click',()=>{
+        sessionStorage.removeItem('selectedMatch');
+        document.getElementById('selected').hidden=true;
+        document.getElementById('needSelect').hidden=false;
+        ['goLive','goFinal','goPhotos'].forEach(id=>document.getElementById(id).disabled=true);
+        document.getElementById('goFinal').title = 'Réservé aux matchs terminés';
+      });
+
+      document.getElementById('goLive').addEventListener('click', ()=>navIfSelected('score.html'));
+      document.getElementById('goFinal').addEventListener('click',()=>navIfSelected('photo-finale.html'));
+      document.getElementById('goPhotos').addEventListener('click',()=>navIfSelected('photos.html'));
+    })();
+  </script>
+</body>
+</html>
