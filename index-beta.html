@@ -56,6 +56,189 @@
     .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center}
     .lightbox.open{display:flex}
     .lightbox img{max-width:92vw;max-height:92vh;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+     /* === VERSION COMPACTE BETA === */
+
+    /* Police un peu plus petite partout */
+    body{
+      font-size:13px;
+    }
+
+    /* Container principal plus serré */
+    .wrap{
+      max-width:720px;
+      margin:6px auto;
+      padding:0 8px;
+    }
+
+    .card{
+      padding:10px 10px 12px;
+      border-radius:14px;
+      box-shadow:0 3px 12px rgba(16,21,34,.06);
+    }
+
+    /* HEADER (logo + titre) plus compact */
+    header{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin:4px 0 4px;
+    }
+
+    header img{
+      width:42px;
+      height:42px;
+      border-radius:8px;
+    }
+
+    .club{
+      font-size:18px;
+    }
+
+    .hint{
+      font-size:11px;
+    }
+
+    /* Titre “Rencontres” + textes d’info */
+    .matches h3{
+      margin:4px 0;
+      font-size:15px;
+    }
+
+    .muted{
+      font-size:11px;
+    }
+
+    .banner{
+      margin:4px 0 6px;
+      padding:6px 8px;
+      font-size:11px;
+      border-radius:10px;
+    }
+
+    /* Bloc de sélection du match */
+    .selected{
+      margin:6px 0 6px;
+      padding:8px 10px;
+      border-radius:12px;
+    }
+
+    .sel-teams{
+      font-size:14px;
+    }
+
+    /* Boutons d’actions (score / photos) */
+    .toolbar{
+      margin:8px 0 0;
+    }
+
+    .toolbar .row{
+      gap:6px;
+    }
+
+    .mini{
+      padding:7px 6px;
+      font-size:11px;
+    }
+
+    /* Sections par jour + liste de matchs */
+    .day-section{
+      margin:8px 0;
+      border-radius:12px;
+    }
+
+    .day-head{
+      padding:6px 8px;
+    }
+
+    .day-title{
+      font-size:13px;
+    }
+
+    .day-sub{
+      font-size:11px;
+    }
+
+    .list{
+      padding:6px 8px 8px;
+      gap:6px;
+    }
+
+    /* Carte d’un match */
+    .match-card{
+      padding:6px 8px;
+      gap:8px;
+      border-radius:10px;
+    }
+
+    .time-col{
+      gap:4px;
+    }
+
+    .time-box{
+      padding:3px 6px;
+      font-size:11px;
+    }
+
+    .code-chip{
+      padding:2px 6px;
+      font-size:10px;
+    }
+
+    .teams{
+      gap:4px;
+    }
+
+    .team-row{
+      gap:4px;
+    }
+
+    .team-name{
+      font-size:13px;
+    }
+
+    .team-score{
+      font-size:14px;
+      min-width:34px;
+    }
+
+    .meta-line{
+      margin-top:2px;
+      gap:6px;
+    }
+
+    .meta-cat,
+    .meta-place{
+      font-size:11px;
+    }
+
+    /* Pastilles LIVE / score final */
+    .chip{
+      padding:2px 6px;
+      font-size:11px;
+      gap:4px;
+    }
+
+    .dot{
+      width:5px;
+      height:5px;
+    }
+
+    /* Vignette photo plus petite */
+    .thumb-wrap{
+      margin-top:4px;
+    }
+
+    .thumb{
+      width:54px;
+      height:54px;
+    }
+
+    /* Pied de page */
+    footer.muted{
+      margin-top:8px;
+      font-size:11px;
+    }
+
   </style>
 </head>
 <body>
